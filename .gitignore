@@ -12,6 +12,7 @@
 !*.txt
 !*.md
 !*.tex
+!*.tpc
 
 *.yy.c
 *.tab.c
