@@ -50,8 +50,7 @@ Litteral     : NombreSigne
 NombreSigne  : NUM
              | ADDSUB NUM
              ;
-DeclVars     :
-             DeclVars TYPE Declarateurs ';'
+DeclVars     : DeclVars TYPE Declarateurs ';'
              |
              ;
 Declarateurs : Declarateurs ',' Declarateur
