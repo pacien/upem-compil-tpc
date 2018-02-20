@@ -114,10 +114,10 @@ F            : ADDSUB F
              | LValue
              | NUM
              | CARACTERE
-             | IDENT '(' Arguments  ')'
+             | IDENT '(' Arguments ')'
              ;
 LValue       : IDENT
-             | IDENT  '[' Exp  ']'
+             | IDENT  '[' Exp ']'
              ;
 Arguments    : ListExp
              |
