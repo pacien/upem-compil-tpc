@@ -12,24 +12,8 @@ void yyerror(char *);
 
 %}
 
-%union {
-  char caractere;
-  int num;
-  char ident[64];
-  char type[16];
-  char comp[3];
-  char addsub;
-  char divstar;
-}
-
-%token <caractere> CARACTERE
-%token <num> NUM
-%token <ident> IDENT
-%token <comp> ORDER EQ
-%token <addsub> ADDSUB
-%token <divstar> DIVSTAR
-%token OR AND CONST IF WHILE RETURN VOID
-%token <type> TYPE
+%token CARACTERE NUM IDENT ORDER EQ ADDSUB DIVSTAR
+%token OR AND CONST IF WHILE RETURN VOID TYPE
 
 %left ','
 %precedence ')'
@@ -127,12 +111,11 @@ ListExp      : ListExp ',' ListExp
              ;
 %%
 
-void yyerror(char *s){
-  fprintf(stderr, "Line no%d: %s\n", lineno, s);
+void yyerror(char *msg){
+  fprintf(stderr, "%s at line %d\n", msg, lineno);
 }
 
 int main(int argc, char **argv) {
-  yyparse();
-  return 0;
+  return yyparse();
 }
 
