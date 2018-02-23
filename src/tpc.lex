@@ -14,37 +14,31 @@ int lineno = 1;
 
 %%
 [ \t\r]+                ;
-\n                      { lineno++;}
-"/*"                    { BEGIN COMMENT;}
-&&                      { return AND; }
+\n                      { lineno++; }
+"/*"                    { BEGIN COMMENT; }
+"&&"                    { return AND; }
 "||"                    { return OR; }
-"*"|"/"|%               { yylval.divstar=yytext[0]; return DIVSTAR; }
-"+"|-                   { yylval.addsub=yytext[0]; return ADDSUB; }
-"<"|"<="|">"|>=         { strcpy(yylval.comp, yytext); return ORDER; }
-==|!=                   { strcpy(yylval.comp, yytext); return EQ; }
-int                     { strcpy(yylval.type, yytext); return TYPE; }
-float                   { strcpy(yylval.type, yytext); return TYPE; }
-double                  { strcpy(yylval.type, yytext); return TYPE; }
-char                    { strcpy(yylval.type, yytext); return TYPE; }
+"*"|"/"|%               { return DIVSTAR; }
+"+"|-                   { return ADDSUB; }
+"<"|"<="|">"|">="       { return ORDER; }
+==|!=                   { return EQ; }
+int                     { return TYPE; }
+char                    { return TYPE; }
 void                    { return VOID; }
 const                   { return CONST; }
-if                      { return IF;}
-else                    { return ELSE;}
+if                      { return IF; }
+else                    { return ELSE; }
 while                   { return WHILE; }
 return                  { return RETURN; }
-[a-zA-Z_][a-zA-Z0-9_]*  { strcpy(yylval.ident, yytext); return IDENT; }
-[0-9]+                  { sscanf(yytext, "%d", &(yylval.num)); return NUM; }
-'\\?.'                  { if (strlen(yytext)==3)
-                            yylval.caractere=yytext[1];
-                          else switch(yytext[2]) {
-                            case 'n': yylval.caractere='\n'; break;
-                            case 't': yylval.caractere='\t'; break;
-                            case '\'': yylval.caractere='\''; break;
-                            }
-                          return CARACTERE; }
-.                       { return yytext[0];}
-<COMMENT>"*/"           { BEGIN INITIAL;}
-<COMMENT>\n             { lineno++;}
+print                   { return PRINT; }
+readc                   { return READC; }
+reade                   { return READE; }
+[a-zA-Z_][a-zA-Z0-9_]*  { return IDENT; }
+[0-9]+                  { return NUM; }
+'\\?.'                  { return CARACTERE; }
+.                       { return yytext[0]; }
+<COMMENT>"*/"           { BEGIN INITIAL; }
+<COMMENT>\n             { lineno++; }
 <COMMENT>.              ;
 %%
 
