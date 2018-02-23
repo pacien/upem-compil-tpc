@@ -1,5 +1,0 @@
-/* exp.tpc */
-
-/* double valeur(double a, double b, double c, double x) ; */
-/* Résolution d'une équation du deuxième degré */
-    r1=(-b+s)/(2*a)+print(valeur(1,b,c,r1),valeur(1,b,c,r2))

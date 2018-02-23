@@ -1,0 +1,24 @@
+/**
+  * UPEM / Compilation / Projet TPC
+  * Exemple de fichier source TPC valide
+  * Pacien TRAN-GIRARD, Adam NAILI
+  */
+
+const special = 'b';
+
+char funky_func(int arg) {
+  return !arg;
+}
+
+void main(void) {
+  char ret;
+  ret = 1 + funky_func(0) * 2;
+
+  while (ret) {
+    readc(ret);
+    print(ret);
+
+    if (ret == special) print('!');
+  }
+}
+
