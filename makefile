@@ -16,7 +16,6 @@ LEX_GEN := tpc.yy
 YACC_GEN := tpc.tab
 
 # OUTPUT
-PARSER_BIN := tparser
 COMPIL_BIN := tcompil
 COMMIT_LOG := commits.log
 REPORT_PDF := rapport.pdf
@@ -30,7 +29,7 @@ LFLAGS := -lfl -ly
 IFLAGS += -I$(SRC_DIR) -I$(OUT_DIR)
 
 # RULES
-all: clean $(OUT_DIR)/$(PARSER_BIN)
+all: clean $(OUT_DIR)/$(COMPIL_BIN)
 
 $(OUT_DIR)/$(LEX_GEN).c: $(SRC_DIR)/$(LEX_SRC)
 	$(LEX) -o $@ $^
@@ -44,7 +43,7 @@ $(OUT_DIR)/$(LEX_GEN).o: $(OUT_DIR)/$(LEX_GEN).c $(OUT_DIR)/$(YACC_GEN).h
 $(OUT_DIR)/$(YACC_GEN).o: $(OUT_DIR)/$(YACC_GEN).c
 	$(CC) -o $@ -c $^ $(IFLAGS) $(LFLAGS) $(CFLAGS)
 
-$(OUT_DIR)/$(PARSER_BIN): $(OUT_DIR)/$(LEX_GEN).o $(OUT_DIR)/$(YACC_GEN).o
+$(OUT_DIR)/$(COMPIL_BIN): $(OUT_DIR)/$(LEX_GEN).o $(OUT_DIR)/$(YACC_GEN).o
 	$(CC) -o $@ $^ $(IFLAGS) $(LFLAGS) $(CFLAGS)
 
 $(OUT_DIR)/$(REPORT_PDF): $(DOC_DIR)/$(PDF_SRC)
