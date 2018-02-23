@@ -33,17 +33,55 @@ L'analyse lexicale est réalisée avec Flex et est contenue dans le fichier `tpc
 
 - Les types sont `entier` et `caractere` et renvoient le token `TYPE`
 
-//TODO
+- Les mots-clés comme `if else return` (auquels on associe les tokens suivants `IF ELSE RETURN`) doivent être écrit en majuscules et ne peuvent pas être utilisés comme identificateur. 
 
+- Les commentaires sont délimités par `/*` et `*/` et ne peuvent pas être imbriqués.
 
-`print`,`reade` et `readc` sont des identificateurs qui appartiennent au langage tpc, ils ne doivent pas être utilisé pour déclarer des variables. Nous avons donc créer des tokens spécifiques pour leur gestion dans la grammaire.
+- `print`,`reade` et `readc` sont des identificateurs qui appartiennent au langage tpc, ils ne doivent pas être utilisé pour déclarer des variables. Nous avons donc créer des tokens spécifiques pour leur gestion dans la grammaire (respectivement les tokens `PRINT`, `READE` et`READC`)
 
 ##Analyse syntaxique
-//TODO
+
+La grammaire est celle fournie sur la plateforme elearning.
+
+- Cette grammaire génère un conflit empiler/réduire pour la règle
+
+```yacc
+Instr	: IF '('Exp')' Instr
+		| IF '('Exp')' Instr ELSE Instr
+```
+
+Par exemple :
+
+```
+IF '('Exp')' IF '('Exp')' Instr ELSE Instr
+```
+
+*Faut il empiler `ELSE` ? Ou réduire `IF '('Exp')' Instr` ?*
+Pour résoudre le conflit, il faut gérer les `precedences`.
+Nous avons choisi de rentre le `ELSE` plus précédant que `')'` qui est le dernier terminal. Ainsi, Bison va choisir d'empiler en priorité.
+
+- Un autre conflit existe, sur l'associativité de `,`:
+
+```yacc
+ListExp	: ListExp ',' Exp
+		| Exp ';'
+```
+
+Par exemple :
+```
+ListExp ',' ListExp ',' ListExp
+```
+
+Doit-on reduire à gauche ? Ou a droite ?
+Dans les langages tel que le C, l'associativité se fait à gauche.
+On déclare donc `%left ,` pour l'indiquer à Bison.
+
+
 ##Améliorations enviseageables
 
 - Récupération sur erreur
+Nous pourrions envisager de parser entièrement le fichier et de ne pas s'arrêter dès la première erreur de syntaxe comme le fait gcc. Il est possible de réaliser ceci en modifiant le code de yyerror() par exemple.
 
 - Numérotation des lignes 
-
-//TODO
+En complément de la précédente amélioration, nous pourrions imaginer donner les lignes dans le message d'erreur de syntaxe.
+Il suffit de maintenir une variable globale incrémentée à chaque saut de ligne `\n`
