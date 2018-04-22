@@ -1,33 +1,37 @@
 ---
-title: "UPEM / Compilation / Projet"
+title: "UPEM / Compilation / Projet / Rapport"
 author: [Pacien TRAN-GIRARD, Adam NAILI]
 date: 2018-02-20
 ...
 
-#Rapport 
+# Analyse lexicale
 
-##Analyse lexicale
 L'analyse lexicale est réalisée avec Flex et est contenue dans le fichier `tpc.lex`.
-*Les lexèmes ont été définis au sein de ce fichier:*
 
-|      Symbole      |                   Description                   | Token associé |
-|:-----------------:|:-----------------------------------------------:|:-------------:|
-|         =         |             opérateur d'affectation             |               |
-|         +         |               opérateur d'addition              |     ADDSUB    |
-|         -         |    opérateur de soustraction ou moins unaire    |     ADDSUB    |
-|         *         |                  multiplication                 |    DIVSTAR    |
-|      / et %       |     division et reste de la division entière    |    DIVSTAR    |
-|         !         |                négation booléenne               |               |
-|       ==, !=      |             opérateur de comparaison            |       EQ      |
-|     <,>,<=,>=     |             opérateur de comparaison            |     ORDER     |
-|         &&        |                opérateur booléen                |      AND      |
-|         ||        |                opérateur booléen                |       OR      |
-|       ; et ,      |          le point virgule et la virgule         |               |
-| (, ), {, } [ et ] |  les parenthèses, les accolades et les crochets |               |
+## Lexèmes
 
-- Certains symboles ne sont pas associés à des tokens. En effet ils sont utilisés directement dans la grammaire, entourés de simple guillemets. (par exemple `'='`)
+Les lexèmes ont été définis au sein de ce fichier :
 
-- Les identificateurs sont constitués d'au moins une lettre, puis éventuellement de chiffres, et/ou d'"underscore" (`_`). Ils sont identifiés par le token `IDENT`
+|             Symbole            |                   Description                  | Token associé |
+|:------------------------------:|:----------------------------------------------:|:-------------:|
+|               `=`              |             opérateur d'affectation            |               |
+|               `+`              |              opérateur d'addition              |    `ADDSUB`   |
+|               `-`              |    opérateur de soustraction ou moins unaire   |    `ADDSUB`   |
+|               `*`              |                 multiplication                 |   `DIVSTAR`   |
+|           `/` et `%`           |    division et reste de la division entière    |   `DIVSTAR`   |
+|               `!`              |               négation booléenne               |               |
+|           `==`, `!=`           |            opérateur de comparaison            |      `EQ`     |
+|      `<`, `>`, `<=` ,`>=`      |            opérateur de comparaison            |    `ORDER`    |
+|              `&&`              |                opérateur booléen               |     `AND`     |
+|              `||`              |                opérateur booléen               |      `OR`     |
+|           `;` et `,`           |         le point virgule et la virgule         |               |
+| `(`, `)`, `{`, `}`, `[` et `]` | les parenthèses, les accolades et les crochets |               |
+
+- Certains symboles ne sont pas associés à des tokens.
+  En effet ils sont utilisés directement dans la grammaire, entourés de simple guillemets. (par exemple `'='`)
+  
+- Les identificateurs sont constitués d'au moins une lettre, puis éventuellement de chiffres, et/ou d'"underscore" (`_`).
+  Ils sont identifiés par le token `IDENT`
 
 - Gestion de la casse
 
@@ -37,13 +41,17 @@ L'analyse lexicale est réalisée avec Flex et est contenue dans le fichier `tpc
 
 - Les commentaires sont délimités par `/*` et `*/` et ne peuvent pas être imbriqués.
 
-- `print`,`reade` et `readc` sont des identificateurs qui appartiennent au langage tpc, ils ne doivent pas être utilisé pour déclarer des variables. Nous avons donc créer des tokens spécifiques pour leur gestion dans la grammaire (respectivement les tokens `PRINT`, `READE` et`READC`)
+- `print`,`reade` et `readc` sont des identificateurs qui appartiennent au langage tpc, ils ne doivent pas être utilisé pour déclarer des variables.
+  Nous avons donc créer des tokens spécifiques pour leur gestion dans la grammaire (respectivement les tokens `PRINT`, `READE` et`READC`)
 
-##Analyse syntaxique
+
+# Analyse syntaxique
 
 La grammaire est celle fournie sur la plateforme elearning.
 
-- Cette grammaire génère un conflit empiler/réduire pour la règle
+## Résolution des conflits
+
+Cette grammaire génère un conflit empiler/réduire pour la règle
 
 ```yacc
 Instr	: IF '('Exp')' Instr
@@ -56,11 +64,12 @@ Par exemple :
 IF '('Exp')' IF '('Exp')' Instr ELSE Instr
 ```
 
-*Faut il empiler `ELSE` ? Ou réduire `IF '('Exp')' Instr` ?*
+Faut il empiler `ELSE` ? Ou réduire `IF '('Exp')' Instr` ?
 Pour résoudre le conflit, il faut gérer les `precedences`.
-Nous avons choisi de rentre le `ELSE` plus précédant que `')'` qui est le dernier terminal. Ainsi, Bison va choisir d'empiler en priorité.
+Nous avons choisi de rentre le `ELSE` plus précédant que `')'` qui est le dernier terminal.
+Ainsi, Bison va choisir d'empiler en priorité.
 
-- Un autre conflit existe, sur l'associativité de `,`:
+Un autre conflit existe, sur l'associativité de `,`:
 
 ```yacc
 ListExp	: ListExp ',' Exp
@@ -68,6 +77,7 @@ ListExp	: ListExp ',' Exp
 ```
 
 Par exemple :
+
 ```
 ListExp ',' ListExp ',' ListExp
 ```
@@ -77,11 +87,15 @@ Dans les langages tel que le C, l'associativité se fait à gauche.
 On déclare donc `%left ,` pour l'indiquer à Bison.
 
 
-##Améliorations enviseageables
+# Améliorations enviseageables
 
-- Récupération sur erreur
-Nous pourrions envisager de parser entièrement le fichier et de ne pas s'arrêter dès la première erreur de syntaxe comme le fait gcc. Il est possible de réaliser ceci en modifiant le code de yyerror() par exemple.
+## Récupération sur erreur
 
-- Numérotation des lignes 
+Nous pourrions envisager de parser entièrement le fichier et de ne pas s'arrêter dès la première erreur de syntaxe comme le fait `gcc`.
+Il est possible de réaliser ceci en modifiant le code de `yyerror()` par exemple.
+
+## Numérotation des lignes 
+
 En complément de la précédente amélioration, nous pourrions imaginer donner les lignes dans le message d'erreur de syntaxe.
 Il suffit de maintenir une variable globale incrémentée à chaque saut de ligne `\n`
+
