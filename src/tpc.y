@@ -17,7 +17,7 @@ void yyerror(char *);
     char caractere;
     int num;
     char ident[64];
-    char type[32];
+    int type;
     char comp[3];
     char addsub;
     char divstar;
@@ -39,7 +39,7 @@ void yyerror(char *);
 
 %%
 Prog:
-     DeclConsts DeclVars DeclFoncts
+     DeclConsts DeclVars DeclFoncts {display_table();}
   ;
 DeclConsts:
      DeclConsts CONST ListConst ';'
@@ -62,8 +62,8 @@ DeclVars:
   |
   ;
 Declarateurs:
-     Declarateurs ',' Declarateur
-  |  Declarateur
+     Declarateurs ',' Declarateur   {addVar($<ident>3, $<type>0);}
+  |  Declarateur                    {addVar($<ident>1, $<type>0);}
   ;
 Declarateur:
      IDENT
@@ -85,8 +85,8 @@ Parametres:
   |  ListTypVar
   ;
 ListTypVar:
-     ListTypVar ',' TYPE IDENT
-  |  TYPE IDENT
+     ListTypVar ',' TYPE IDENT    {addVar($<ident>4, $<type>3);}
+  |  TYPE IDENT                   {addVar($<ident>2, $<type>1);}
   ;
 Corps:
      '{' DeclConsts DeclVars SuiteInstr '}'
@@ -99,8 +99,8 @@ Instr:
   |  ';'
   |  RETURN Exp ';'
   |  RETURN ';'
-  |  READE '(' IDENT ')' ';'
-  |  READC '(' IDENT ')' ';'
+  |  READE '(' IDENT ')' ';'      {lookup($<ident>3);}
+  |  READC '(' IDENT ')' ';'      {lookup($<ident>3);}
   |  PRINT '(' Exp ')' ';'
   |  IF '(' Exp ')' Instr
   |  IF '(' Exp ')' Instr ELSE Instr
@@ -139,14 +139,14 @@ F:
      ADDSUB F                   {$$ = $2;} //on fait remonter le type
   |  '!' F                      {$$ = $2;} 
   |  '(' Exp ')'                {$$ = $2;}
-  |  LValue                     //Il faut trouver le type de LValue
+  |  LValue                     {$$ = $1;}
   |  NUM                        {$$ = INT;} // on stocke les types pour l'analyse sémantique
   |  CARACTERE                  {$$ = CHAR;}
   |  IDENT '(' Arguments  ')'   {$$ = INT;} //tableau d'entiers uniquement
   ;
 LValue:
-     IDENT                      {lookup($<ident>1);}
-  |  IDENT  '[' Exp  ']'        {lookup($<ident>1);}
+     IDENT                      {lookup($<ident>1);get_type($<ident>1);}
+  |  IDENT  '[' Exp  ']'        {lookup($<ident>1);get_type($<ident>1);}
   ;
 Arguments:
      ListExp

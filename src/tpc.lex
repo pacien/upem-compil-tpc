@@ -5,7 +5,8 @@
   */
 
 #include "tpc.tab.h"
-
+#define INT 0
+#define CHAR 1
 int lineno = 1;
 %}
 
@@ -22,8 +23,8 @@ int lineno = 1;
 "+"|-                   { yylval.addsub=yytext[0]; return ADDSUB; }
 "<"|"<="|">"|">="       { strcpy(yylval.comp, yytext); return ORDER; }
 ==|!=                   { strcpy(yylval.comp, yytext); return EQ; }
-entier                  { strcpy(yylval.type, yytext); return TYPE; }
-caractere               { strcpy(yylval.type, yytext); return TYPE; }
+entier                  { yylval.type = INT; return TYPE; }
+caractere               { yylval.type = CHAR; return TYPE; }
 void                    { return VOID; }
 const                   { return CONST; }
 if                      { return IF; }

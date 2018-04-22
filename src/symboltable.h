@@ -13,6 +13,7 @@
 typedef struct {
     char name[MAXNAME];
     int type;
+    int addr;
 } STentry;
 
 
@@ -26,5 +27,5 @@ typedef struct {
 void addVar(const char name[], int type);
 void lookup(const char name[]);
 void display_table();
-
+int get_type(const char name[]);
 #endif

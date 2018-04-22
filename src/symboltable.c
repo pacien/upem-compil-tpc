@@ -28,8 +28,29 @@ void lookup(const char name[]) {
     if (!strcmp(symbol_table.entries[count].name, name)) {
       return;
     }
-    printf("No definition of the variable %s near line %d\n", name,
-           lineno);
   }
+  printf("No definition of the variable %s near line %d\n", name,
+           lineno);
 }
 
+void display_table(){
+    int count;
+    for (count=0;count<symbol_table.size;count++) {
+        if(symbol_table.entries[count].type == INT)
+            printf("entier: %s, pos: %d     \n", symbol_table.entries[count].name, symbol_table.entries[count].addr);
+        else
+            printf("caractere: %s, pos: %d       \n", symbol_table.entries[count].name, symbol_table.entries[count].addr);
+    }
+    printf("\n");
+}
+
+int get_type(const char name[]){
+	int count;
+
+  for (count = 0; count < symbol_table.size; count++) {
+    if (!strcmp(symbol_table.entries[count].name, name)) {
+      return symbol_table.entries[count].type;
+    }
+  }
+  return -1;
+}
