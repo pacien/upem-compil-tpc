@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include "symboltable.h"
 
 extern int lineno;
 int yylex();
@@ -12,12 +13,25 @@ void yyerror(char *);
 
 %}
 
-%token CARACTERE NUM IDENT
-%token ADDSUB DIVSTAR
-%token ORDER EQ OR AND
-%token IF WHILE RETURN
-%token CONST VOID TYPE
-%token PRINT READC READE
+%union {
+    char caractere;
+    int num;
+    char ident[64];
+    char type[32];
+    char comp[3];
+    char addsub;
+    char divstar;
+}
+%token <caractere> CARACTERE
+%token <num> NUM
+%token <ident> IDENT
+%token <comp> ORDER EQ
+%token <addsub> ADDSUB
+%token <divstar> DIVSTAR
+%token OR AND CONST IF ELSE WHILE RETURN VOID PRINT READC READE
+%token <type> TYPE
+
+%type <num> Exp EB TB FB M E T F LValue
 
 %left ','
 %precedence ')'
@@ -122,17 +136,17 @@ T:
   |  F
   ;
 F:
-     ADDSUB F
-  |  '!' F
-  |  '(' Exp ')'
-  |  LValue
-  |  NUM
-  |  CARACTERE
-  |  IDENT '(' Arguments  ')'
+     ADDSUB F                   {$$ = $2;} //on fait remonter le type
+  |  '!' F                      {$$ = $2;} 
+  |  '(' Exp ')'                {$$ = $2;}
+  |  LValue                     //Il faut trouver le type de LValue
+  |  NUM                        {$$ = INT;} // on stocke les types pour l'analyse sémantique
+  |  CARACTERE                  {$$ = CHAR;}
+  |  IDENT '(' Arguments  ')'   {$$ = INT;} //tableau d'entiers uniquement
   ;
 LValue:
-     IDENT
-  |  IDENT  '[' Exp  ']'
+     IDENT                      {lookup($<ident>1);}
+  |  IDENT  '[' Exp  ']'        {lookup($<ident>1);}
   ;
 Arguments:
      ListExp

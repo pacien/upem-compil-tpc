@@ -6,7 +6,7 @@
 
 const special = 'b';
 
-char funky_func(int arg) {
+caractere funky_func(entier arg) {
   return !arg;
 }
 

@@ -6,12 +6,12 @@
 
 const special = 'b';
 
-char funky_func(int arg) {
+caractere funky_func(entier arg) {
   return !arg;
 }
 
 void main(void) {
-  char ret;
+  caractere ret;
   ret = 1 + funky_func(0) * 2;
 
   while (ret) {

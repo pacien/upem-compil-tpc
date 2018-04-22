@@ -18,12 +18,12 @@ int lineno = 1;
 "/*"                    { BEGIN COMMENT; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
-"*"|"/"|%               { return DIVSTAR; }
-"+"|-                   { return ADDSUB; }
-"<"|"<="|">"|">="       { return ORDER; }
-==|!=                   { return EQ; }
-int                     { return TYPE; }
-char                    { return TYPE; }
+"*"|"/"|%               { yylval.divstar=yytext[0]; return DIVSTAR; }
+"+"|-                   { yylval.addsub=yytext[0]; return ADDSUB; }
+"<"|"<="|">"|">="       { strcpy(yylval.comp, yytext); return ORDER; }
+==|!=                   { strcpy(yylval.comp, yytext); return EQ; }
+entier                  { strcpy(yylval.type, yytext); return TYPE; }
+caractere               { strcpy(yylval.type, yytext); return TYPE; }
 void                    { return VOID; }
 const                   { return CONST; }
 if                      { return IF; }
@@ -33,9 +33,16 @@ return                  { return RETURN; }
 print                   { return PRINT; }
 readc                   { return READC; }
 reade                   { return READE; }
-[a-zA-Z_][a-zA-Z0-9_]*  { return IDENT; }
-[0-9]+                  { return NUM; }
-'\\?.'                  { return CARACTERE; }
+[a-zA-Z_][a-zA-Z0-9_]*  { strcpy(yylval.ident, yytext); return IDENT; }
+[0-9]+                  { sscanf(yytext, "%d", &(yylval.num)); return NUM; }
+'\\?.'                  { if (strlen(yytext)==3)
+                            yylval.caractere=yytext[1];
+                          else switch(yytext[2]) {
+                            case 'n': yylval.caractere='\n'; break;
+                            case 't': yylval.caractere='\t'; break;
+                            case '\'': yylval.caractere='\''; break;
+                            }
+                          return CARACTERE; }
 .                       { return yytext[0]; }
 <COMMENT>"*/"           { BEGIN INITIAL; }
 <COMMENT>\n             { lineno++; }
