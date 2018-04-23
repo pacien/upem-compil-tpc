@@ -24,8 +24,10 @@ typedef struct {
 } SymbolTable;
 
 
-void addVar(const char name[], int type);
-void lookup(const char name[]);
-void display_table();
-int get_type(const char name[]);
+void glo_addVar(const char name[], int type);
+int glo_lookup(const char name[]);
+void glo_display_table();
+void loc_addVar(const char name[], int type);
+int loc_lookup(const char name[]);
+void loc_display_table();
 #endif
