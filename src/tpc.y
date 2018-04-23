@@ -42,40 +42,29 @@ static int status = GLOBAL;
 %precedence ELSE
 
 %%
-Prog:{printf("section .data\n");
-			printf("format_entier db \"%%d \n\", 10,0");
-			printf("section .bss\nsection .text\nglobal _start\n");
-			printf("print:\n");
+Prog:{printf("extern printf\n");
+			printf("section .data\n");
+			printf("format_int db \"%%d \\n\",10,0\n\n");
+			printf("section .bss\nsection .text\n\nglobal _start\n");
+			printf("print: ;print needs an argument in rax\n\n");
 			printf("push rbp\n");
 			printf("mov rbp, rsp\n");
-			
-			printf("push rax\n");
-			printf("push rcx\n");
-			printf("push rdx\n");
-			printf("push rdi\n");
 			printf("push rsi\n");
-			printf("push r8\n");
-			
-			printf("mov r8, rdx \n");
-			printf("mov rcx, rcx\n");
-			printf("mov rdx, rbx\n");
-		  printf("  mov rdi, format_entier\n");
-		  printf("  mov rax, 0\n");
-		  printf("  call printf WRT ..plt\n");	
-	
-			printf("pop r8\n");
+			printf("mov rsi, rax\n");
+			printf("mov rdi, format_int\n");
+			printf("mov rax, 0\n");
+		  printf("call printf WRT ..plt\n");	
 			printf("pop rsi\n");
-			printf("pop rdi\n");
-			printf("pop rdx\n");
-			printf("pop rcx\n");
-			printf("pop rax\n");
-			
 			printf("pop rbp\n");
-			printf("ret\n");	
+			printf("ret\n");
+			printf("\n_start:\n");	
 			}
-     DeclConsts DeclVars DeclFoncts {
-     		
-     	glo_display_table();}
+     DeclConsts DeclVars DeclFoncts 
+     {
+        printf("mov rax,60 \n");
+        printf("mov rdi,0 \n");  
+        printf("syscall \n");
+     }
   ;
 DeclConsts:
      DeclConsts CONST ListConst ';'
