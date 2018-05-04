@@ -2,6 +2,19 @@
 /*
  * UPEM / Compilation / Projet
  * Pacien TRAN-GIRARD, Adam NAILI
+ *
+ *
+ *
+ *
+ *
+ *
+ *	TODO : 
+ * - Gérer les globales avec .bss (Il faut donc décaler le début du programme après l'analyse des globales pour savoir combien de place réserver.)
+ * - Evaluation paresseuse 
+ * - Gestion des tableaux
+ *
+ * 
+ *
  */
 
 #include <stdio.h>
@@ -160,7 +173,8 @@ Exp:
   |  EB
   ;
 EB:
-     EB OR TB                     {check_expected_type($1,INT);check_expected_type($3,INT);} 
+     EB {check_expected_type($1,INT); printf("pop rax\n");} 
+     OR TB {check_expected_type($4,INT);} 
   |  TB
   ;
 TB:
@@ -187,7 +201,20 @@ E:
   |  T
   ;
 T:
-     T DIVSTAR F                  {check_expected_type($1,INT);check_expected_type($3,INT);}
+     T DIVSTAR F                  {check_expected_type($1,INT);check_expected_type($3,INT);
+                                  if($2 == '*'){
+                                    printf(";E * T\npop rax\npop rcx\nimul rax,rcx\npush rax\n");
+                                  }
+                                  else{
+                                    printf(";E / T\npop rax\npop rcx\nxor rdx,rdx\nidiv rcx\n");
+                                    if ($2 == '/'){
+                                    	printf("push rax\n");
+                                    }
+                                    else{
+                                    	printf("push rdx\n");
+                                    }
+                                  }
+                                  }
   |  F
   ;
 F:
@@ -196,15 +223,15 @@ F:
                                     printf(";+F\n");
                                   }
                                   else{
-                                    printf(";-F\npop rdx\nxor eax,eax\nsub eax,edx\npush rax\n");
+                                    printf(";-F\npop rdx\nxor rax,rax\nsub rax,rdx\npush rax\n");
                                   }
                                   } 
   |  '!' F                        {$$ = $2;printf(";!F\npop rax\nxor rax,1\npush rax\n");} 
   |  '(' Exp ')'                  {$$ = $2;}
   |  LValue                       {if(status == GLOBAL) {$$ = glo_lookup($<ident>1);printf("push QWORD [rbp - %d] ;%s\n",glo_get_addr($<ident>1),$<ident>1);}
                                   else {$$ = loc_lookup($<ident>1); printf("push QWORD [rbp - %d] ;%s\n",loc_get_addr($<ident>1),$<ident>1);}}
-  |  NUM                          {$$ = INT; printf("push %d\n",$1);} // on stocke les types pour l'analyse sémantique
-  |  CARACTERE                    {$$ = CHAR; printf("push %d\n",$1);}
+  |  NUM                          {$$ = INT; if(status == LOCAL) printf("push %d\n",$1);} // on stocke les types pour l'analyse sémantique
+  |  CARACTERE                    {$$ = CHAR; if(status == LOCAL) printf("push %d\n",$1);}
   |  IDENT '(' Arguments  ')'     {$$ = INT;} //tableau d'entiers uniquement
   ;
 LValue:

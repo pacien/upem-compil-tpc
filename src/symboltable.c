@@ -94,6 +94,12 @@ int loc_lookup(const char name[]) {
       return loc_symbol_table.entries[count].type;
     }
   }
+  //Check in global table
+  for (count = 0; count < glo_symbol_table.size; count++) {
+    if (!strcmp(glo_symbol_table.entries[count].name, name)) {
+      return glo_symbol_table.entries[count].type;
+    }
+  }
   fprintf(stderr, "No definition of the variable %s near line %d\n", name,
           lineno);
   return -1;

@@ -7,6 +7,6 @@ entier main(void)  {
 	entier a,b,res;
 	a = 2;
 	b = 3;
-	res = a - b;
+	res = a % b;
 	print(res);
 }
