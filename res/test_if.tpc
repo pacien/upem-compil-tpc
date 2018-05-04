@@ -1,0 +1,13 @@
+/* test-table-symboles.tpc */
+
+/* Test file for simplified translator of a declaration of variables in C */
+
+entier main(void)  {
+	entier bool;
+	bool = 1;
+	if(bool){
+		if(bool){
+			print (bool);
+		}
+	}
+}

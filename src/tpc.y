@@ -9,12 +9,13 @@
  *
  *
  *	TODO : 
+ *  ------
  * - Gérer les globales avec .bss (Il faut donc décaler le début du programme après l'analyse des globales pour savoir combien de place réserver.)
  * - Evaluation paresseuse 
  * - Gestion des tableaux
- *
+ * - Tableau des fonctions
  * 
- *
+ * - remettre car conflit pour l'instant-> 
  */
 
 #include <stdio.h>
@@ -26,7 +27,8 @@ void yyerror(char *);
 #define GLOBAL 0
 #define LOCAL 1
 static int status = GLOBAL;
-
+static int num_label = 0;
+static int num_if = 0;
 %}
 
 %union {
@@ -155,11 +157,14 @@ Instr:
   |  READC '(' IDENT ')' ';'      {if(status == GLOBAL) glo_lookup($<ident>3);
                                   else loc_lookup($<ident>3);}
   |  PRINT '(' Exp ')' ';'        {printf("pop rax\ncall print\n");}
-  |  IF '(' Exp ')' Instr
-  |  IF '(' Exp ')' Instr ELSE Instr
+  |  IF '(' Exp IfHandling')' Instr IfEndHandling
+  |  IF '(' Exp IfHandling')' Instr IfEndHandling ELSE Instr IfElseEndHandling
   |  WHILE '(' Exp ')' Instr
   |  '{' SuiteInstr '}'
   ;
+IfHandling: {printf("pop rax\ncmp rax,0\njz .end_if%d\n",$<num>$ = num_if++);};
+IfEndHandling: {printf(".end_if%d\n",$<num>-2);};
+IfElseEndHandling: {printf(".end_if%d\n",$<num>-4);};
 Exp:
      LValue '=' Exp               {if(status == GLOBAL){
                                     $$ = glo_lookup($<ident>1);

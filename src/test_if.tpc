@@ -1,0 +1,43 @@
+extern printf
+section .data
+format_int db "%d",10,0
+
+section .bss
+section .text
+
+global _start
+print: ;print needs an argument in rax
+push rbp
+mov rbp, rsp
+push rsi
+mov rsi, rax
+mov rdi, format_int
+mov rax, 0
+call printf WRT ..plt
+pop rsi
+pop rbp
+ret
+
+_start:
+push rbp
+mov rbp, rsp
+
+push 0
+push 1
+pop QWORD [rbp - 0] ;bool
+push QWORD [rbp - 0] ;bool
+pop rax
+cmp rax,0
+jz .end_if0
+push QWORD [rbp - 0] ;bool
+pop rax
+call print
+.end_if0
+mov rax,60 
+mov rdi,0 
+syscall 
+;global table
+
+;local table
+;entier: bool, pos: 0     
+
