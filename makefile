@@ -3,6 +3,7 @@
 
 # DIRECTORIES
 SRC_DIR := src
+RES_DIR := res
 OUT_DIR := out
 DOC_DIR := doc
 
@@ -25,12 +26,23 @@ REPORT_PDF := rapport.pdf
 CC := gcc
 LEX := flex
 YACC := bison
+ASM := nasm
+AFLAGS := -f elf64
 CFLAGS := -ansi -pedantic -Wall -std=gnu99 -O2
 LFLAGS := -lfl -ly
 IFLAGS += -I$(SRC_DIR) -I$(OUT_DIR)
 
 # RULES
 all: clean $(OUT_DIR)/$(COMPIL_BIN)
+
+test: $(OUT_DIR)/$(FILE_TEST).o
+	$(CC) $< -o $(OUT_DIR)/$(FILE_TEST) -nostartfiles
+
+$(OUT_DIR)/$(FILE_TEST).o: $(OUT_DIR)/$(FILE_TEST).asm
+	$(ASM) $(AFLAGS) $< -o $@
+
+$(OUT_DIR)/$(FILE_TEST).asm: $(RES_DIR)/$(FILE_TEST).tpc $(OUT_DIR)/$(COMPIL_BIN) 
+	$(OUT_DIR)/$(COMPIL_BIN) < $< > $@
 
 $(OUT_DIR)/$(LEX_GEN).c: $(SRC_DIR)/$(LEX_SRC)
 	$(LEX) -o $@ $^
