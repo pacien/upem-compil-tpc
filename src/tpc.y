@@ -11,7 +11,6 @@
  *	TODO : 
  *  ------
  * - Gérer les globales avec .bss (Il faut donc décaler le début du programme après l'analyse des globales pour savoir combien de place réserver.)
- * - Evaluation paresseuse 
  * - Gestion des tableaux
  * - Tableau des fonctions
  *  
