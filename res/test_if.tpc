@@ -3,11 +3,10 @@
 /* Test file for simplified translator of a declaration of variables in C */
 
 entier main(void)  {
-	entier bool;
-	bool = 1;
-	if(bool){
-		if(bool){
-			print (bool);
-		}
+	entier bool1,bool2;
+	bool1 = 0;
+	bool2 = 0;
+	if(bool1 == bool2){
+		print(0);
 	}
 }
