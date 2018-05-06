@@ -1,4 +1,9 @@
-#include "symboltable.h"
+/**
+  * UPEM / Compilation / Projet
+  * Pacien TRAN-GIRARD, Adam NAILI
+  */
+
+#include "symbol_table.h"
 
 extern int lineno; /* from lexical analyser */
 
@@ -22,7 +27,7 @@ void glo_addVar(const char name[], int type) {
   strcpy(glo_symbol_table.entries[glo_symbol_table.size - 1].name, name);
   glo_symbol_table.entries[glo_symbol_table.size - 1].type = type;
   glo_symbol_table.entries[glo_symbol_table.size - 1].addr =
-      (glo_symbol_table.size - 1) * 8;
+    (glo_symbol_table.size - 1) * 8;
 }
 
 // Verifies that the variable exists and returns the type
@@ -38,6 +43,7 @@ int glo_lookup(const char name[]) {
           lineno);
   return -1;
 }
+
 int glo_get_addr(const char name[]) {
   int count;
 
@@ -83,7 +89,7 @@ void loc_addVar(const char name[], int type) {
   strcpy(loc_symbol_table.entries[loc_symbol_table.size - 1].name, name);
   loc_symbol_table.entries[loc_symbol_table.size - 1].type = type;
   loc_symbol_table.entries[loc_symbol_table.size - 1].addr =
-      (loc_symbol_table.size - 1) * 8;
+    (loc_symbol_table.size - 1) * 8;
 }
 
 int loc_lookup(const char name[]) {
@@ -140,12 +146,18 @@ void loc_clean_table() {
   loc_symbol_table.size = 0;
 }
 
+static char *string_of_type(int type) {
+  switch (type) {
+  case INT: return "INT";
+  case CHAR: return "CHAR";
+  default: return "UNEXPECTED";
+  }
+}
+
 void check_expected_type(int type_to_check, int type_expected) {
   if (type_to_check != type_expected)
     fprintf(stderr, "Expected type : %s -> Got type : %s (near line %d)\n",
-            type_expected == INT ? "INT" : type_expected == CHAR ? "CHAR"
-                                                                 : "UNDEFINED",
-            type_to_check == INT ? "INT" : type_to_check == CHAR ? "CHAR"
-                                                                 : "UNDEFINED",
+            string_of_type(type_to_check),
+            string_of_type(type_to_check),
             lineno);
 }

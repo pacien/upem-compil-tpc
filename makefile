@@ -11,7 +11,7 @@ DOC_DIR := doc
 LEX_SRC := tpc.lex
 YACC_SRC := tpc.y
 PDF_SRC := rapport.md
-ST_SRC := symboltable
+ST_SRC := symbol_table
 
 # INTERMEDIATE
 LEX_GEN := tpc.yy
@@ -41,7 +41,7 @@ test: $(OUT_DIR)/$(FILE_TEST).o
 $(OUT_DIR)/$(FILE_TEST).o: $(OUT_DIR)/$(FILE_TEST).asm
 	$(ASM) $(AFLAGS) $< -o $@
 
-$(OUT_DIR)/$(FILE_TEST).asm: $(RES_DIR)/$(FILE_TEST).tpc $(OUT_DIR)/$(COMPIL_BIN) 
+$(OUT_DIR)/$(FILE_TEST).asm: $(RES_DIR)/$(FILE_TEST).tpc $(OUT_DIR)/$(COMPIL_BIN)
 	$(OUT_DIR)/$(COMPIL_BIN) < $< > $@
 
 $(OUT_DIR)/$(LEX_GEN).c: $(SRC_DIR)/$(LEX_SRC)
@@ -70,4 +70,3 @@ $(OUT_DIR)/$(COMMIT_LOG):
 
 clean:
 	rm -rf $(OUT_DIR)/*
-

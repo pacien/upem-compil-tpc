@@ -1,8 +1,8 @@
 %{
 /**
-  * UPEM / Compilation / Projet
-  * Pacien TRAN-GIRARD, Adam NAILI
-  */
+ * UPEM / Compilation / Projet
+ * Pacien TRAN-GIRARD, Adam NAILI
+ */
 
 #include "tpc.tab.h"
 #define INT 0
@@ -49,4 +49,3 @@ reade                   { return READE; }
 <COMMENT>\n             { lineno++; }
 <COMMENT>.              ;
 %%
-

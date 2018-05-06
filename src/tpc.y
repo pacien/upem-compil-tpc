@@ -3,21 +3,16 @@
  * UPEM / Compilation / Projet
  * Pacien TRAN-GIRARD, Adam NAILI
  *
- *
- *
- *
- *
- *
- *	TODO : 
+ *	TODO :
  *  ------
  * - Gérer les globales avec .bss (Il faut donc décaler le début du programme après l'analyse des globales pour savoir combien de place réserver.)
  * - Gestion des tableaux
  * - Tableau des fonctions
- *  
+ *
  */
 
 #include <stdio.h>
-#include "symboltable.h"
+#include "symbol_table.h"
 
 extern int lineno;
 int yylex();
@@ -30,13 +25,13 @@ static int num_if = 0;
 %}
 
 %union {
-    char caractere;
-    int num;
-    char ident[64];
-    int type;
-    char comp[3];
-    char addsub;
-    char divstar;
+  char caractere;
+  int num;
+  char ident[64];
+  int type;
+  char comp[3];
+  char addsub;
+  char divstar;
 }
 %token <caractere> CARACTERE
 %token <num> NUM
@@ -47,7 +42,7 @@ static int num_if = 0;
 %token OR AND CONST IF ELSE WHILE RETURN VOID PRINT READC READE
 %token <type> TYPE
 
-%type <num> Exp EB TB FB M E T F 
+%type <num> Exp EB TB FB M E T F
 %type <ident> LValue
 
 %left ','
@@ -66,17 +61,17 @@ Prog:{printf("extern printf\n");
 			printf("mov rsi, rax\n");
 			printf("mov rdi, format_int\n");
 			printf("mov rax, 0\n");
-		  printf("call printf WRT ..plt\n");	
+		  printf("call printf WRT ..plt\n");
 			printf("pop rsi\n");
 			printf("pop rbp\n");
 			printf("ret\n");
-			printf("\n_start:\n");	
+			printf("\n_start:\n");
       printf("push rbp\nmov rbp, rsp\n\n");
 			}
-     DeclConsts DeclVars DeclFoncts 
+     DeclConsts DeclVars DeclFoncts
      {
         printf("mov rax,60 \n");
-        printf("mov rdi,0 \n");  
+        printf("mov rdi,0 \n");
         printf("syscall \n");
         printf(";global table\n");
         glo_display_table();
@@ -278,8 +273,8 @@ F:
                                   else{
                                     printf(";-F\npop rdx\nxor rax,rax\nsub rax,rdx\npush rax\n");
                                   }
-                                  } 
-  |  '!' F                        {$$ = $2;printf(";!F\npop rax\nxor rax,1\npush rax\n");} 
+                                  }
+  |  '!' F                        {$$ = $2;printf(";!F\npop rax\nxor rax,1\npush rax\n");}
   |  '(' Exp ')'                  {$$ = $2;}
   |  LValue                       {
                                     if(status == GLOBAL) {
@@ -330,4 +325,3 @@ void yyerror(char *msg){
 int main(int argc, char **argv) {
   return yyparse();
 }
-
