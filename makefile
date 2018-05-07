@@ -12,6 +12,7 @@ LEX_SRC := tpc.lex
 YACC_SRC := tpc.y
 PDF_SRC := rapport.md
 ST_SRC := symbol_table
+GEN_SRC := generator
 
 # INTERMEDIATE
 LEX_GEN := tpc.yy
@@ -47,7 +48,7 @@ $(OUT_DIR)/$(FILE_TEST).asm: $(RES_DIR)/$(FILE_TEST).tpc $(OUT_DIR)/$(COMPIL_BIN
 $(OUT_DIR)/$(LEX_GEN).c: $(SRC_DIR)/$(LEX_SRC)
 	$(LEX) -o $@ $^
 
-$(OUT_DIR)/$(YACC_GEN).c $(OUT_DIR)/$(YACC_GEN).h: $(SRC_DIR)/$(YACC_SRC) $(SRC_DIR)/$(ST_SRC).h
+$(OUT_DIR)/$(YACC_GEN).c $(OUT_DIR)/$(YACC_GEN).h: $(SRC_DIR)/$(YACC_SRC) $(SRC_DIR)/$(ST_SRC).h $(SRC_DIR)/$(GEN_SRC).h
 	$(YACC) --output=$(OUT_DIR)/$(YACC_GEN).c --defines=$(OUT_DIR)/$(YACC_GEN).h -v $<
 
 $(OUT_DIR)/$(LEX_GEN).o: $(OUT_DIR)/$(LEX_GEN).c $(OUT_DIR)/$(YACC_GEN).h
@@ -59,7 +60,10 @@ $(OUT_DIR)/$(YACC_GEN).o: $(OUT_DIR)/$(YACC_GEN).c
 $(OUT_DIR)/$(ST_SRC).o: $(SRC_DIR)/$(ST_SRC).c
 	$(CC) -o $@ -c $^ $(IFLAGS) $(LFLAGS) $(CFLAGS)
 
-$(OUT_DIR)/$(COMPIL_BIN): $(OUT_DIR)/$(LEX_GEN).o $(OUT_DIR)/$(YACC_GEN).o $(OUT_DIR)/$(ST_SRC).o
+$(OUT_DIR)/$(GEN_SRC).o: $(SRC_DIR)/$(GEN_SRC).c
+	$(CC) -o $@ -c $^ $(IFLAGS) $(LFLAGS) $(CFLAGS)
+
+$(OUT_DIR)/$(COMPIL_BIN): $(OUT_DIR)/$(LEX_GEN).o $(OUT_DIR)/$(YACC_GEN).o $(OUT_DIR)/$(ST_SRC).o $(OUT_DIR)/$(GEN_SRC).o
 	$(CC) -o $@ $^ $(IFLAGS) $(LFLAGS) $(CFLAGS)
 
 $(OUT_DIR)/$(REPORT_PDF): $(DOC_DIR)/$(PDF_SRC)

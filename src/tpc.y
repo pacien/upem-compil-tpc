@@ -13,13 +13,12 @@
 
 #include <stdio.h>
 #include "symbol_table.h"
+#include "generator.h"
 
 extern int lineno;
 int yylex();
 void yyerror(char *);
-#define GLOBAL 0
-#define LOCAL 1
-static int status = GLOBAL;
+static Scope scope = GLOBAL;
 static int num_label = 0;
 static int num_if = 0;
 %}
@@ -50,100 +49,59 @@ static int num_if = 0;
 %precedence ELSE
 
 %%
-Prog:{printf("extern printf\n");
-			printf("section .data\n");
-			printf("format_int db \"%%d\",10,0\n\n");
-			printf("section .bss\nsection .text\n\nglobal _start\n");
-			printf("print: ;print needs an argument in rax\n");
-			printf("push rbp\n");
-			printf("mov rbp, rsp\n");
-			printf("push rsi\n");
-			printf("mov rsi, rax\n");
-			printf("mov rdi, format_int\n");
-			printf("mov rax, 0\n");
-		  printf("call printf WRT ..plt\n");
-			printf("pop rsi\n");
-			printf("pop rbp\n");
-			printf("ret\n");
-			printf("\n_start:\n");
-      printf("push rbp\nmov rbp, rsp\n\n");
-			}
-     DeclConsts DeclVars DeclFoncts
-     {
-        printf("mov rax,60 \n");
-        printf("mov rdi,0 \n");
-        printf("syscall \n");
-        printf(";global table\n");
-        glo_display_table();
-        printf(";local table\n");
-        loc_display_table();
-     }
+Prog: { prologue(); }
+    DeclConsts DeclVars DeclFoncts { const_declaration(); }
   ;
 DeclConsts:
-     DeclConsts CONST ListConst ';'
+    DeclConsts CONST ListConst ';'
   |
   ;
 ListConst:
-     ListConst ',' IDENT '=' Litteral
-  |  IDENT '=' Litteral
+    ListConst ',' IDENT '=' Litteral
+  | IDENT '=' Litteral
   ;
 Litteral:
-     NombreSigne
-  |  CARACTERE
+    NombreSigne
+  | CARACTERE
   ;
 NombreSigne:
-     NUM
-  |  ADDSUB NUM
+    NUM
+  | ADDSUB NUM
   ;
 DeclVars:
-     DeclVars TYPE Declarateurs ';'
+    DeclVars TYPE Declarateurs ';'
   |
   ;
 Declarateurs:
-     Declarateurs ',' Declarateur   {
-                                      if(status == GLOBAL) glo_addVar($<ident>3, $<type>0);
-                                      else loc_addVar($<ident>3, $<type>0);
-                                      printf("push 0\n");
-                                    }
-  |  Declarateur                    {
-                                      if(status == GLOBAL) glo_addVar($<ident>1, $<type>0);
-                                      else loc_addVar($<ident>1, $<type>0);
-                                      printf("push 0\n");
-                                    }
+    Declarateurs ',' Declarateur { declaration($<ident>3, $<type>0, scope); }
+  | Declarateur                  { declaration($<ident>1, $<type>0, scope); }
   ;
 Declarateur:
-     IDENT
-  |  IDENT '[' NUM ']'
+    IDENT
+  | IDENT '[' NUM ']'
   ;
 DeclFoncts:
      DeclFoncts DeclFonct
   |  DeclFonct
   ;
 DeclFonct:
-     EnTeteFonct {status = LOCAL;} Corps {status = GLOBAL;}
+    EnTeteFonct { scope = LOCAL; }
+    Corps       { scope = GLOBAL; }
   ;
 EnTeteFonct:
-     TYPE IDENT '(' Parametres ')'
-  |  VOID IDENT '(' Parametres ')'
+    TYPE IDENT '(' Parametres ')'
+  | VOID IDENT '(' Parametres ')'
   ;
 Parametres:
-     VOID
-  |  ListTypVar
+    VOID
+  | ListTypVar
   ;
 ListTypVar:
-     ListTypVar ',' TYPE IDENT    {
-                                    if(status == GLOBAL) glo_addVar($<ident>4, $<type>3);
-                                    else loc_addVar($<ident>4, $<type>3);
-                                    printf("push 0\n");
-                                  }
-  |  TYPE IDENT                   {
-                                    if(status == GLOBAL) glo_addVar($<ident>2, $<type>1);
-                                    else loc_addVar($<ident>2, $<type>1);
-                                    printf("push 0\n");
-                                  }
+    ListTypVar ',' TYPE IDENT { declaration($<ident>4, $<type>3, scope); }
+  | TYPE IDENT                { declaration($<ident>2, $<type>1, scope); }
   ;
 Corps:
-     '{' DeclConsts DeclVars SuiteInstr '}'
+    '{' DeclConsts DeclVars SuiteInstr '}'
   ;
 SuiteInstr:
      SuiteInstr Instr
@@ -154,11 +112,11 @@ Instr:
   |  RETURN Exp ';'
   |  RETURN ';'
   |  READE '(' IDENT ')' ';'      {
-                                    if(status == GLOBAL) glo_lookup($<ident>3);
+                                    if(scope == GLOBAL) glo_lookup($<ident>3);
                                     else loc_lookup($<ident>3);
                                   }
   |  READC '(' IDENT ')' ';'      {
-                                    if(status == GLOBAL) glo_lookup($<ident>3);
+                                    if(scope == GLOBAL) glo_lookup($<ident>3);
                                     else loc_lookup($<ident>3);
                                   }
   |  PRINT '(' Exp ')' ';'        {printf("pop rax\ncall print\n");}
@@ -172,7 +130,7 @@ IfEndHandling:                    {printf("jmp .end_ifelse%d\n.end_if%d:\n",$<nu
 IfElseEndHandling:                {printf(".end_ifelse%d:\n;ENDIF\n\n",$<num>-5);};
 Exp:
      LValue '=' Exp               {
-                                    if(status == GLOBAL){
+                                    if(scope == GLOBAL){
                                     $$ = glo_lookup($<ident>1);
                                     printf("pop QWORD [rbp - %d] ;%s\n",glo_get_addr($<ident>1),$<ident>1);
                                     }
@@ -277,7 +235,7 @@ F:
   |  '!' F                        {$$ = $2;printf(";!F\npop rax\nxor rax,1\npush rax\n");}
   |  '(' Exp ')'                  {$$ = $2;}
   |  LValue                       {
-                                    if(status == GLOBAL) {
+                                    if(scope == GLOBAL) {
                                       $$ = glo_lookup($<ident>1);
                                       printf("push QWORD [rbp - %d] ;%s\n",glo_get_addr($<ident>1),$<ident>1);
                                     }
@@ -286,13 +244,13 @@ F:
                                       printf("push QWORD [rbp - %d] ;%s\n",loc_get_addr($<ident>1),$<ident>1);
                                     }
                                   }
-  |  NUM                          {$$ = INT; if(status == LOCAL) printf("push %d\n",$1);} // on stocke les types pour l'analyse sémantique
-  |  CARACTERE                    {$$ = CHAR; if(status == LOCAL) printf("push %d\n",$1);}
+  |  NUM                          {$$ = INT; if(scope == LOCAL) printf("push %d\n",$1);} // on stocke les types pour l'analyse sémantique
+  |  CARACTERE                    {$$ = CHAR; if(scope == LOCAL) printf("push %d\n",$1);}
   |  IDENT '(' Arguments  ')'     {$$ = INT;} //tableau d'entiers uniquement
   ;
 LValue:
      IDENT                        {
-                                    if(status == GLOBAL) {
+                                    if(scope == GLOBAL) {
                                       glo_lookup($<ident>1);
                                     }
                                     else {
@@ -300,7 +258,7 @@ LValue:
                                     }
                                   }
   |  IDENT  '[' Exp  ']'          {
-                                    if(status == GLOBAL) {
+                                    if(scope == GLOBAL) {
                                       glo_lookup($<ident>1);
                                     }
                                     else {
