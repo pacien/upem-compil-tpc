@@ -49,8 +49,8 @@ static int num_if = 0;
 %precedence ELSE
 
 %%
-Prog: { prologue(); }
-    DeclConsts DeclVars DeclFoncts { const_declaration(); }
+Prog:                              { gen_prologue(); }
+    DeclConsts DeclVars DeclFoncts { gen_const_declaration(); }
   ;
 DeclConsts:
     DeclConsts CONST ListConst ';'
@@ -73,8 +73,8 @@ DeclVars:
   |
   ;
 Declarateurs:
-    Declarateurs ',' Declarateur { declaration($<ident>3, $<type>0, scope); }
-  | Declarateur                  { declaration($<ident>1, $<type>0, scope); }
+    Declarateurs ',' Declarateur { gen_declaration($<ident>3, $<type>0, scope); }
+  | Declarateur                  { gen_declaration($<ident>1, $<type>0, scope); }
   ;
 Declarateur:
     IDENT
@@ -97,39 +97,34 @@ Parametres:
   | ListTypVar
   ;
 ListTypVar:
-    ListTypVar ',' TYPE IDENT { declaration($<ident>4, $<type>3, scope); }
-  | TYPE IDENT                { declaration($<ident>2, $<type>1, scope); }
+    ListTypVar ',' TYPE IDENT { gen_declaration($<ident>4, $<type>3, scope); }
+  | TYPE IDENT                { gen_declaration($<ident>2, $<type>1, scope); }
   ;
 Corps:
     '{' DeclConsts DeclVars SuiteInstr '}'
   ;
 SuiteInstr:
-     SuiteInstr Instr
-  |  ;
-Instr:
-     Exp ';'
-  |  ';'
-  |  RETURN Exp ';'
-  |  RETURN ';'
-  |  READE '(' IDENT ')' ';'      {
-                                    if(scope == GLOBAL) glo_lookup($<ident>3);
-                                    else loc_lookup($<ident>3);
-                                  }
-  |  READC '(' IDENT ')' ';'      {
-                                    if(scope == GLOBAL) glo_lookup($<ident>3);
-                                    else loc_lookup($<ident>3);
-                                  }
-  |  PRINT '(' Exp ')' ';'        {printf("pop rax\ncall print\n");}
-  |  IF '(' Exp IfHandling')' Instr {printf(".end_if%d:\n;ENDIF\n\n",$<num>4);}
-  |  IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling
-  |  WHILE '(' Exp ')' Instr
-  |  '{' SuiteInstr '}'
+    SuiteInstr Instr
+  |
   ;
-IfHandling:                       {printf("\n;BEGINIF\npop rax\ncmp rax,0\njz .end_if%d\n",$<num>$ = num_if++);};
-IfEndHandling:                    {printf("jmp .end_ifelse%d\n.end_if%d:\n",$<num>-3,$<num>-3);};
-IfElseEndHandling:                {printf(".end_ifelse%d:\n;ENDIF\n\n",$<num>-5);};
+Instr:
+    Exp ';'
+  | ';'
+  | RETURN Exp ';'
+  | RETURN ';'
+  | READE '(' IDENT ')' ';'        { gen_read($<ident>3, scope); }
+  | READC '(' IDENT ')' ';'        { gen_read($<ident>3, scope); }
+  | PRINT '(' Exp ')' ';'          { gen_print();}
+  | IF '(' Exp IfHandling')' Instr { gen_if_label($<num>4); }
+  | IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling
+  | WHILE '(' Exp ')' Instr
+  | '{' SuiteInstr '}'
+  ;
+IfHandling:                       { gen_if_start($<num>$ = num_if++); };
+IfEndHandling:                    { gen_if_end($<num>-3); };
+IfElseEndHandling:                { gen_ifelse_end($<num>-5); };
 Exp:
-     LValue '=' Exp               {
+    LValue '=' Exp               { /* TODO: extract this into func */
                                     if(scope == GLOBAL){
                                     $$ = glo_lookup($<ident>1);
                                     printf("pop QWORD [rbp - %d] ;%s\n",glo_get_addr($<ident>1),$<ident>1);
@@ -139,89 +134,31 @@ Exp:
                                       printf("pop QWORD [rbp - %d] ;%s\n",loc_get_addr($<ident>1),$<ident>1);
                                     }
                                   }
-  |  EB
+  | EB
   ;
 EB:
-     EB OR TB                     {
-                                    check_expected_type($1,INT);check_expected_type($3,INT);
-                                    printf(";a OR c\npop rax\n");
-                                    printf("cmp rax,1\nje .true%d\npop rcx\ncmp rcx,1\njz .true%d\npush 0\njmp .false%d\n",num_label,num_label,num_label);
-                                    printf(".true%d:\npush 1\n.false%d:",num_label,num_label);
-                                    num_label++;
-                                  }
-  |  TB
+    EB OR TB    { gen_or($1, $3, num_label++); }
+  | TB
   ;
 TB:
-     TB AND FB                    {
-                                    check_expected_type($1,INT);check_expected_type($3,INT);
-                                    printf(";a AND c\npop rax\n");
-                                    printf("cmp rax,0\njz .false%d\npop rcx\ncmp rcx,0\njz .false%d\npush 1\njmp .true%d\n",num_label,num_label,num_label);
-                                    printf(".false%d:\npush 0\n.true%d:",num_label,num_label);
-                                    num_label++;
-                                  }
-  |  FB
+    TB AND FB   { gen_and($1, $3, num_label++); }
+  | FB
   ;
 FB:
-     FB EQ M                      {
-                                    check_expected_type($1,INT);check_expected_type($3,INT);
-                                    printf(";a EQ c\npop rax\npop rcx\ncmp rax,rcx\n");
-                                    if(!strcmp($2,"==")){
-                                      printf("je .true%d\n",num_label);
-                                    }else{
-                                      printf("jne .true%d\n",num_label);
-                                    }
-                                    printf("push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:",num_label,num_label,num_label);
-                                    num_label++;
-                                  }
-  |  M
+    FB EQ M     { gen_eq($2, $1, $3, num_label++); }
+  | M
   ;
 M:
-     M ORDER E                    {
-                                    check_expected_type($1,INT);check_expected_type($3,INT);
-                                    printf(";a ORDER c\npop rcx\npop rax\ncmp rax,rcx\n");
-                                    if(!strcmp($2,"<")){
-                                      printf("jl .true%d\n",num_label);
-                                    }else if(!strcmp($2,"<=")){
-                                      printf("jle .true%d\n",num_label);
-                                    }else if(!strcmp($2,">")){
-                                      printf("jg .true%d\n",num_label);
-                                    }else{
-                                      printf("jge .true%d\n",num_label);
-                                    }
-                                    printf("push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:",num_label,num_label,num_label);
-                                    num_label++;
-                                  }
+    M ORDER E   { gen_order($2, $1, $3, num_label++); }
   |  E
   ;
 E:
-     E ADDSUB T                   {
-                                    check_expected_type($1,INT);check_expected_type($3,INT);
-                                    if($2 == '+'){
-                                      printf(";E + T\npop rcx\npop rax\nadd rax,rcx\npush rax\n");
-                                    }
-                                    else{
-                                      printf(";E - T\npop rcx\npop rax\nsub rax,rcx\npush rax\n");
-                                    }
-                                  }
-  |  T
+    E ADDSUB T  { gen_addsub($2, $1, $3); }
+  | T
   ;
 T:
-     T DIVSTAR F                  {
-                                    check_expected_type($1,INT);check_expected_type($3,INT);
-                                    if($2 == '*'){
-                                      printf(";E * T\npop rax\npop rcx\nimul rax,rcx\npush rax\n");
-                                    }
-                                    else{
-                                      printf(";E / T\npop rax\npop rcx\nxor rdx,rdx\nidiv rcx\n");
-                                      if ($2 == '/'){
-                                      	printf("push rax\n");
-                                      }
-                                      else{
-                                      	printf("push rdx\n");
-                                      }
-                                    }
-                                  }
-  |  F
+    T DIVSTAR F { gen_divstar($2, $1, $3); }
+  | F
   ;
 F:
      ADDSUB F                     {$$ = $2;//on fait remonter le type
