@@ -96,8 +96,19 @@ void gen_ifelse_end(int idx) {
 
 // ----- OPERATORS -----
 
-void gen_assign(int ident, Scope scope) {
-  // TODO: what's "$$" and how do we extract it?
+int gen_assign(const char ident[], Scope scope) {
+  const char instr_fmt[] = "pop QWORD [rbp - %d] ;%s\n";
+
+  switch (scope) {
+  case GLOBAL:
+    printf(instr_fmt, glo_get_addr(ident), ident);
+    return glo_lookup(ident);
+  case LOCAL:
+    printf(instr_fmt, loc_get_addr(ident), ident);
+    return loc_lookup(ident);
+  default:
+    exit(1);
+  }
 }
 
 void gen_or(int left, int right, int idx) {
@@ -204,5 +215,50 @@ void gen_divstar(char op, int left, int right) {
   default:
     exit(1);
   }
+}
+
+int gen_signed_expr(char op, int type) {
+  switch (op) {
+  case '+':
+    printf(";+F\n");
+    break;
+  case '-':
+    printf(";-F\npop rdx\nxor rax,rax\nsub rax,rdx\npush rax\n");
+    break;
+  default:
+    exit(1);
+  }
+
+  return type;
+}
+
+int gen_negate_expr(int type) {
+  printf(";!F\npop rax\nxor rax,1\npush rax\n");
+  return type;
+}
+
+int gen_value(const char ident[], Scope scope) {
+  switch (scope) {
+  case GLOBAL:
+    printf("push QWORD [rbp - %d] ;%s\n", glo_get_addr(ident), ident);
+    return glo_lookup(ident);
+  case LOCAL:
+    printf("push QWORD [rbp - %d] ;%s\n", loc_get_addr(ident), ident);
+    return loc_lookup(ident);
+  default:
+    exit(1);
+  }
+}
+
+int gen_num(int value, Scope scope) {
+  if (scope == LOCAL) printf("push %d\n", value); // TODO: remove if?
+  // stored for the semantic analysis.
+
+  return INT;
+}
+
+int gen_char(int value, Scope scope) {
+  if(scope == LOCAL) printf("push %d\n", value); // TODO: remove if?
+  return CHAR;
 }
 

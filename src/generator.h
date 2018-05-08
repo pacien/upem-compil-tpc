@@ -23,12 +23,18 @@ void gen_if_start(int idx);
 void gen_if_end(int idx);
 void gen_ifelse_end(int idx);
 
-void gen_assign(int ident, Scope scope);
+int gen_assign(const char ident[], Scope scope);
 void gen_or(int left, int right, int idx);
 void gen_and(int left, int right, int idx);
 void gen_eq(const char op[], int left, int right, int idx);
 void gen_order(const char op[], int left, int right, int idx);
 void gen_addsub(char op, int left, int right);
 void gen_divstar(char op, int left, int right);
+
+int gen_signed_expr(char op, int type);
+int gen_negate_expr(int type);
+int gen_value(const char ident[], Scope scope);
+int gen_num(int value, Scope scope);
+int gen_char(int value, Scope scope);
 
 #endif
