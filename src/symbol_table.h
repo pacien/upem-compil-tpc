@@ -11,9 +11,12 @@
 #include <string.h>
 
 #define MAXNAME 32
-#define INT 0
-#define CHAR 1
 #define MAXSYMBOLS 256
+
+typedef enum type {
+  INT,
+  CHAR
+} Type;
 
 typedef struct {
   char name[MAXNAME];
