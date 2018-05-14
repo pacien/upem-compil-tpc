@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+int nb_globals = 0;
 #include "symbol_table.h"
 #include "generator.h"
 
@@ -89,9 +90,11 @@ DeclFonct:
   Corps       { scope = GLOBAL; }
 ;
 EnTeteFonct:
-  TYPE IDENT '(' Parametres ')'
-| VOID IDENT '(' Parametres ')'
+  TYPE IDENT Prologue '(' Parametres ')'
+| VOID IDENT Prologue '(' Parametres ')'
 ;
+Prologue: {gen_prologue_continue();};
+
 Parametres:
   VOID
 | ListTypVar

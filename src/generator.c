@@ -13,7 +13,11 @@ void gen_prologue() {
   printf("extern printf\n");
   printf("section .data\n");
   printf("format_int db \"%%d\",10,0\n\n");
-  printf("section .bss\nsection .text\n\nglobal _start\n");
+  printf("section .bss\n");
+}
+void gen_prologue_continue(){
+  printf("globals: resq %d\n", nb_globals);
+  printf("section .text\n\nglobal _start\n");
   printf("print: ;print needs an argument in rax\n");
   printf("push rbp\n");
   printf("mov rbp, rsp\n");
@@ -28,7 +32,6 @@ void gen_prologue() {
   printf("\n_start:\n");
   printf("push rbp\nmov rbp, rsp\n\n");
 }
-
 void gen_const_declaration() {
   printf("mov rax,60 \n");
   printf("mov rdi,0 \n");
@@ -43,13 +46,14 @@ void gen_declaration(const char name[], int type, Scope scope) {
   switch (scope) {
   case GLOBAL:
     glo_addVar(name, type);
+    nb_globals++;
     break;
   case LOCAL:
     loc_addVar(name, type);
+    printf("push 0\n");
     break;
   }
 
-  printf("push 0\n");
 }
 
 // ----- READ AND PRINT FUNCTIONS -----
