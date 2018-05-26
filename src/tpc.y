@@ -11,9 +11,10 @@
  *
  */
 
-#include <stdio.h>
 int nb_globals = 0;
 #include "symbol_table.h"
+#include <stdio.h>
+#include <getopt.h>
 #include "generator.h"
 
 extern int lineno;
@@ -182,5 +183,23 @@ void yyerror(char *msg){
 }
 
 int main(int argc, char **argv) {
+  char opt;
+
+  output = stdout;
+  while ((opt = getopt(argc, argv, "o:")) != -1)
+    switch (opt) {
+    case 'o':
+      output = fopen(optarg, "w+");
+      if (output == NULL) {
+        perror("Error opening output file: ");
+        return -1;
+      }
+      break;
+
+    default:
+      fputs("Exiting due to invalid option.\n", stderr);
+      return -1;
+    }
+
   return yyparse();
 }

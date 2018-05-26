@@ -4,6 +4,7 @@
   */
 
 #include "symbol_table.h"
+#include "generator.h"
 
 extern int lineno; /* from lexical analyser */
 
@@ -61,15 +62,15 @@ void glo_display_table() {
   int count;
   for (count = 0; count < glo_symbol_table.size; count++) {
     if (glo_symbol_table.entries[count].type == INT)
-      printf(";entier: %s, pos: %d     \n",
+      fprintf(output, ";entier: %s, pos: %d     \n",
              glo_symbol_table.entries[count].name,
              glo_symbol_table.entries[count].addr);
     else
-      printf(";caractere: %s, pos: %d       \n",
+      fprintf(output, ";caractere: %s, pos: %d       \n",
              glo_symbol_table.entries[count].name,
              glo_symbol_table.entries[count].addr);
   }
-  printf("\n");
+  fprintf(output, "\n");
 }
 
 void loc_addVar(const char name[], int type) {
@@ -127,21 +128,21 @@ void loc_display_table() {
   int count;
   for (count = 0; count < loc_symbol_table.size; count++) {
     if (loc_symbol_table.entries[count].type == INT)
-      printf(";entier: %s, pos: %d     \n",
+      fprintf(output, ";entier: %s, pos: %d     \n",
              loc_symbol_table.entries[count].name,
              loc_symbol_table.entries[count].addr);
     else
-      printf(";caractere: %s, pos: %d       \n",
+      fprintf(output, ";caractere: %s, pos: %d       \n",
              loc_symbol_table.entries[count].name,
              loc_symbol_table.entries[count].addr);
   }
-  printf("\n");
+  fprintf(output, "\n");
 }
 
 void loc_clean_table() {
   int i;
   for (i = 0; i < loc_symbol_table.size; i++) {
-    printf("pop eax\n");
+    fprintf(output, "pop eax\n");
   }
   loc_symbol_table.size = 0;
 }

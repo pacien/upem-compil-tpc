@@ -6,12 +6,15 @@
 #ifndef __GENERATOR_H__
 #define __GENERATOR_H__
 
+#include <stdio.h>
+
 typedef enum scope {
   GLOBAL,
   LOCAL
 } Scope;
 
 extern int nb_globals;
+FILE *output;
 
 void gen_prologue();
 void gen_prologue_continue();
