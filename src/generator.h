@@ -17,7 +17,7 @@ extern int nb_globals;
 FILE *output;
 
 void gen_prologue();
-void gen_prologue_continue();
+void gen_prologue_continue(int *bss_done);
 void gen_const_declaration();
 void gen_declaration(const char name[], int type, Scope scope);
 

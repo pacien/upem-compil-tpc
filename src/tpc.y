@@ -21,6 +21,7 @@ extern int lineno;
 int yylex();
 void yyerror(char *);
 static Scope scope = GLOBAL;
+static int bss_done = 0;
 static int num_label = 0;
 static int num_if = 0;
 %}
@@ -91,10 +92,11 @@ DeclFonct:
   Corps       { scope = GLOBAL; }
 ;
 EnTeteFonct:
-  TYPE IDENT Prologue '(' Parametres ')'
-| VOID IDENT Prologue '(' Parametres ')'
+  TYPE IDENT PrologueCont '(' Parametres ')'
+| VOID IDENT PrologueCont '(' Parametres ')'
 ;
-Prologue: {gen_prologue_continue();};
+
+PrologueCont: {gen_prologue_continue(&bss_done);};
 
 Parametres:
   VOID

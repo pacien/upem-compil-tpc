@@ -14,27 +14,30 @@ void gen_prologue() {
   fprintf(output, "format_int db \"%%d\",10,0\n\n");
   fprintf(output, "section .bss\n");
 }
-void gen_prologue_continue(){
-  fprintf(output, "globals: resq %d\n", nb_globals);
-  fprintf(output, "section .text\n\nglobal _start\n");
-  fprintf(output, "print: ;print needs an argument in rax\n");
-  fprintf(output, "push rbp\n");
-  fprintf(output, "mov rbp, rsp\n");
-  fprintf(output, "push rsi\n");
-  fprintf(output, "mov rsi, rax\n");
-  fprintf(output, "mov rdi, format_int\n");
-  fprintf(output, "mov rax, 0\n");
-  fprintf(output, "call printf WRT ..plt\n");
-  fprintf(output, "pop rsi\n");
-  fprintf(output, "pop rbp\n");
-  fprintf(output, "ret\n");
-  fprintf(output, "\n_start:\n");
-  fprintf(output, "push rbp\nmov rbp, rsp\n\n");
+void gen_prologue_continue(int *bss_done){
+  if (*bss_done == 0){
+    fprintf(output, "globals: resq %d\n", nb_globals);
+    fprintf(output, "section .text\n\nglobal _start\n");
+    fprintf(output, "print: ;print needs an argument in rax\n");
+    fprintf(output, "push rbp\n");
+    fprintf(output, "mov rbp, rsp\n");
+    fprintf(output, "push rsi\n");
+    fprintf(output, "mov rsi, rax\n");
+    fprintf(output, "mov rdi, format_int\n");
+    fprintf(output, "mov rax, 0\n");
+    fprintf(output, "call printf WRT ..plt\n");
+    fprintf(output, "pop rsi\n");
+    fprintf(output, "pop rbp\n");
+    fprintf(output, "ret\n");
+    fprintf(output, "\n_start:\n");
+    fprintf(output, "push rbp\nmov rbp, rsp\n\n");
+    *bss_done = 1;
+  }
 }
 void gen_const_declaration() {
   fprintf(output, "mov rax,60 \n");
   fprintf(output, "mov rdi,0 \n");
-  fprintf(output, "syscall \n");
+  fprintf(output, "syscall \n\n");
   fprintf(output, ";global table\n");
   glo_display_table();
   fprintf(output, ";local table\n");
@@ -100,15 +103,20 @@ void gen_ifelse_end(int idx) {
 // ----- OPERATORS -----
 
 int gen_assign(const char ident[], Scope scope) {
-  const char instr_fmt[] = "pop QWORD [rbp - %d] ;%s\n";
-
+  int g_addr = glo_get_addr(ident);
   switch (scope) {
   case GLOBAL:
-    fprintf(output, instr_fmt, glo_get_addr(ident), ident);
+    fprintf(output, "pop QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
     return glo_lookup(ident);
   case LOCAL:
-    fprintf(output, instr_fmt, loc_get_addr(ident), ident);
-    return loc_lookup(ident);
+    if (g_addr == -1) {
+      fprintf(output, "pop QWORD [rbp - %d] ;%s\n", loc_get_addr(ident), ident);
+      return loc_lookup(ident);
+    }
+    else {
+      fprintf(output, "pop QWORD [globals + %d] ;%s\n", g_addr, ident);
+      return glo_lookup(ident);
+    } 
   default:
     exit(1);
   }
@@ -241,13 +249,20 @@ int gen_negate_expr(int type) {
 }
 
 int gen_value(const char ident[], Scope scope) {
+  int g_addr = glo_get_addr(ident);
   switch (scope) {
   case GLOBAL:
-    fprintf(output, "push QWORD [rbp - %d] ;%s\n", glo_get_addr(ident), ident);
+    fprintf(output, "push QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
     return glo_lookup(ident);
   case LOCAL:
-    fprintf(output, "push QWORD [rbp - %d] ;%s\n", loc_get_addr(ident), ident);
-    return loc_lookup(ident);
+    if (g_addr == -1) {
+      fprintf(output, "push QWORD [rbp - %d] ;%s\n", loc_get_addr(ident), ident);
+      return loc_lookup(ident);
+    }
+    else {
+      fprintf(output, "push QWORD [globals + %d] ;%s\n", g_addr, ident);
+      return glo_lookup(ident);
+    } 
   default:
     exit(1);
   }

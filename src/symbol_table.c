@@ -47,7 +47,6 @@ int glo_lookup(const char name[]) {
 
 int glo_get_addr(const char name[]) {
   int count;
-
   for (count = 0; count < glo_symbol_table.size; count++) {
     if (!strcmp(glo_symbol_table.entries[count].name, name)) {
       return glo_symbol_table.entries[count].addr;
