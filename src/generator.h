@@ -19,6 +19,9 @@ FILE *output;
 void gen_prologue();
 void gen_prologue_continue(int *bss_done);
 void gen_const_declaration();
+void gen_function_declaration(const char name[], int return_type, int nb_param);
+void gen_function_end_declaration();
+int gen_function_call(const char name[], int nb_param);
 void gen_declaration(const char name[], int type, Scope scope);
 
 void gen_read(const char name[], Scope scope);

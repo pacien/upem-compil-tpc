@@ -4,9 +4,16 @@
 entier r1,b,s,c,r2 ;
 caractere letter, digit, punct; 
 
+void calcul(void) {
+	entier i;
+	i = 3;
+  r1=12;
+  r2=13;
+  b = r1 + r2 + i;
+  print(b);
+}
+
+
 entier main(void)  {
-   r1=12;
-   r2=13;
-   b = r1 + r2;
-   print(b);
+	calcul();
 }

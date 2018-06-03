@@ -5,9 +5,8 @@
  *
  *	TODO :
  *  ------
- * - Gérer les globales avec .bss (Il faut donc décaler le début du programme après l'analyse des globales pour savoir combien de place réserver.)
  * - Gestion des tableaux
- * - Tableau des fonctions
+ * - Fonctions avec paramètres et retour de fonctions (void fonctions déjà fonctionnelles)
  *
  */
 
@@ -44,7 +43,7 @@ static int num_if = 0;
 %token OR AND CONST IF ELSE WHILE RETURN VOID PRINT READC READE
 %token <type> TYPE
 
-%type <num> Exp EB TB FB M E T F
+%type <num> Exp EB TB FB M E T F Parametres
 %type <ident> LValue
 
 %left ','
@@ -89,22 +88,22 @@ DeclFoncts:
 ;
 DeclFonct:
   EnTeteFonct { scope = LOCAL; }
-  Corps       { scope = GLOBAL; }
+  Corps       { gen_function_end_declaration(); scope = GLOBAL; }
 ;
 EnTeteFonct:
-  TYPE IDENT PrologueCont '(' Parametres ')'
-| VOID IDENT PrologueCont '(' Parametres ')'
+  TYPE IDENT PrologueCont '(' Parametres ')' {gen_function_declaration($<ident>2, $<type>1, $5);}
+| VOID IDENT PrologueCont '(' Parametres ')' {gen_function_declaration($<ident>2, 2, $5);}
 ;
 
 PrologueCont: {gen_prologue_continue(&bss_done);};
 
 Parametres:
-  VOID
-| ListTypVar
+  VOID {$$ = 0;}
+| ListTypVar { $<num>$ = $<num>1;}
 ;
 ListTypVar:
-  ListTypVar ',' TYPE IDENT { gen_declaration($<ident>4, $<type>3, scope); }
-| TYPE IDENT                { gen_declaration($<ident>2, $<type>1, scope); }
+  ListTypVar ',' TYPE IDENT { gen_declaration($<ident>4, $<type>3, scope); $<num>$ = $<num>1+1;  }
+| TYPE IDENT                { gen_declaration($<ident>2, $<type>1, scope); $<num>$ = 1; }
 ;
 Corps:
   '{' DeclConsts DeclVars SuiteInstr '}'
@@ -164,7 +163,7 @@ F:
 | LValue                        { $$ = gen_value($<ident>1, scope); }
 | NUM                           { $$ = gen_num($1, scope); }
 | CARACTERE                     { $$ = gen_char($1, scope); }
-| IDENT '(' Arguments  ')'      { $$ = INT; } // tableau d'entiers uniquement
+| IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3);} 
 ;
 LValue:
   IDENT                        { gen_read($<ident>1, scope); }
@@ -172,11 +171,11 @@ LValue:
 ;
 Arguments:
   ListExp
-|
+| {$<num>$ = 0;}
 ;
 ListExp:
-  ListExp ',' Exp
-| Exp
+  ListExp ',' Exp {$<num>$ = $<num>1 + 1;}
+| Exp {$<num>$ = 1;}
 ;
 %%
 

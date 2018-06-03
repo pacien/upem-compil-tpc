@@ -12,6 +12,7 @@
 
 #define MAXNAME 32
 #define MAXSYMBOLS 256
+#define MAXFUNCTIONS 256
 
 typedef enum type {
   INT,
@@ -30,6 +31,21 @@ typedef struct {
   int size;
 } SymbolTable;
 
+typedef struct {
+  char name[MAXNAME];
+  int return_type;
+  int nb_parameters;
+} FTentry;
+
+typedef struct {
+  FTentry entries[MAXFUNCTIONS];
+  int maxsize;
+  int size;
+} FunctionTable;
+
+void fun_add(const char name[], int rt_type, int nb_par);
+void fun_display_table();
+int fun_lookup(const char name[], int nb_param);
 void glo_addVar(const char name[], int type);
 int glo_lookup(const char name[]);
 int glo_get_addr(const char name[]);

@@ -18,7 +18,7 @@ void gen_prologue_continue(int *bss_done){
   if (*bss_done == 0){
     fprintf(output, "globals: resq %d\n", nb_globals);
     fprintf(output, "section .text\n\nglobal _start\n");
-    fprintf(output, "print: ;print needs an argument in rax\n");
+    fprintf(output, "\nprint: ;print needs an argument in rax\n");
     fprintf(output, "push rbp\n");
     fprintf(output, "mov rbp, rsp\n");
     fprintf(output, "push rsi\n");
@@ -29,19 +29,35 @@ void gen_prologue_continue(int *bss_done){
     fprintf(output, "pop rsi\n");
     fprintf(output, "pop rbp\n");
     fprintf(output, "ret\n");
-    fprintf(output, "\n_start:\n");
-    fprintf(output, "push rbp\nmov rbp, rsp\n\n");
     *bss_done = 1;
   }
 }
 void gen_const_declaration() {
-  fprintf(output, "mov rax,60 \n");
+  fprintf(output, "\n_start:\n");
+  fprintf(output, "push rbp\nmov rbp, rsp\n\n");
+  fprintf(output, "call main\n");
+  fprintf(output, "\nmov rax,60 \n");
   fprintf(output, "mov rdi,0 \n");
   fprintf(output, "syscall \n\n");
   fprintf(output, ";global table\n");
   glo_display_table();
   fprintf(output, ";local table\n");
   loc_display_table();
+  fprintf(output, ";function table\n");
+  fun_display_table();
+}
+
+void gen_function_declaration(const char name[], int return_type, int nb_param){
+  fun_add(name,return_type,nb_param);
+  fprintf(output, "\n%s:\npush rbp\nmov rbp,rsp\n",name);
+}
+
+void gen_function_end_declaration(){
+  fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
+}
+int gen_function_call(const char name[], int nb_param){
+  fprintf(output,"call %s\n",name);
+  return fun_lookup(name,nb_param);
 }
 
 void gen_declaration(const char name[], int type, Scope scope) {
