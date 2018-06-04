@@ -172,8 +172,6 @@ int loc_get_addr(const char name[]) {
       return loc_symbol_table.entries[count].addr;
     }
   }
-  fprintf(stderr, "No definition of the variable %s near line %d\n", name,
-          lineno);
   return -1;
 }
 void loc_display_table() {

@@ -9,23 +9,67 @@
 // ----- GLOBAL FUNCTIONS -----
 
 void gen_prologue() {
-  fprintf(output, "extern printf\n");
+  fprintf(output, "extern printf\nextern scanf\n");
   fprintf(output, "section .data\n");
-  fprintf(output, "format_int db \"%%d\",10,0\n\n");
+  fprintf(output, "format_int db \"%%d\",10,0\n");
+  fprintf(output, "format_char db \"%%c\",10,0\n");
+  fprintf(output, "format_int_in: db \"%%d\", 0\n");
+  fprintf(output, "format_char_in: db \"%%c\", 0\n\n");
   fprintf(output, "section .bss\n");
 }
-void gen_prologue_continue(int *bss_done){
-  if (*bss_done == 0){
+void gen_prologue_continue(int *bss_done) {
+  if (*bss_done == 0) {
     fprintf(output, "globals: resq %d\n", nb_globals);
     fprintf(output, "section .text\n\nglobal _start\n");
-    fprintf(output, "\nprint: ;print needs an argument in rax\n");
+    fprintf(output, "\nprinte: ;print needs an argument in rax\n");
     fprintf(output, "push rbp\n");
     fprintf(output, "mov rbp, rsp\n");
     fprintf(output, "push rsi\n");
+    fprintf(output, "push rdi\n");
     fprintf(output, "mov rsi, rax\n");
     fprintf(output, "mov rdi, format_int\n");
     fprintf(output, "mov rax, 0\n");
     fprintf(output, "call printf WRT ..plt\n");
+    fprintf(output, "pop rdi\n");
+    fprintf(output, "pop rsi\n");
+    fprintf(output, "pop rbp\n");
+    fprintf(output, "ret\n");
+    fprintf(output, "\nprintc: ;print needs an argument in rax\n");
+    fprintf(output, "push rbp\n");
+    fprintf(output, "mov rbp, rsp\n");
+    fprintf(output, "push rsi\n");
+    fprintf(output, "push rdi\n");
+    fprintf(output, "mov rsi, rax\n");
+    fprintf(output, "mov rdi, format_char\n");
+    fprintf(output, "mov rax, 0\n");
+    fprintf(output, "call printf WRT ..plt\n");
+    fprintf(output, "pop rdi\n");
+    fprintf(output, "pop rsi\n");
+    fprintf(output, "pop rbp\n");
+    fprintf(output, "ret\n");
+    fprintf(output, "\nreade: ;read needs an adress in rax\n");
+    fprintf(output, "push rbp\n");
+    fprintf(output, "mov rbp, rsp\n");
+    fprintf(output, "push rsi\n");
+    fprintf(output, "push rdi\n");
+    fprintf(output, "mov rsi, rax\n");
+    fprintf(output, "mov rdi, format_int_in\n");
+    fprintf(output, "mov rax, 0\n");
+    fprintf(output, "call scanf\n");
+    fprintf(output, "pop rdi\n");
+    fprintf(output, "pop rsi\n");
+    fprintf(output, "pop rbp\n");
+    fprintf(output, "ret\n");
+    fprintf(output, "\nreadc: ;read needs an adress in rax\n");
+    fprintf(output, "push rbp\n");
+    fprintf(output, "mov rbp, rsp\n");
+    fprintf(output, "push rsi\n");
+    fprintf(output, "push rdi\n");
+    fprintf(output, "mov rsi, rax\n");
+    fprintf(output, "mov rdi, format_char_in\n");
+    fprintf(output, "mov rax, 0\n");
+    fprintf(output, "call scanf\n");
+    fprintf(output, "pop rdi\n");
     fprintf(output, "pop rsi\n");
     fprintf(output, "pop rbp\n");
     fprintf(output, "ret\n");
@@ -47,17 +91,18 @@ void gen_const_declaration() {
   fun_display_table();
 }
 
-void gen_function_declaration(const char name[], int return_type, int nb_param){
-  fun_add(name,return_type,nb_param);
-  fprintf(output, "\n%s:\npush rbp\nmov rbp,rsp\n",name);
+void gen_function_declaration(const char name[], int return_type,
+                              int nb_param) {
+  fun_add(name, return_type, nb_param);
+  fprintf(output, "\n%s:\npush rbp\nmov rbp,rsp\n", name);
 }
 
-void gen_function_end_declaration(){
+void gen_function_end_declaration() {
   fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
 }
-int gen_function_call(const char name[], int nb_param){
-  fprintf(output,"call %s\n",name);
-  return fun_lookup(name,nb_param);
+int gen_function_call(const char name[], int nb_param) {
+  fprintf(output, "call %s\n", name);
+  return fun_lookup(name, nb_param);
 }
 
 void gen_declaration(const char name[], int type, Scope scope) {
@@ -71,12 +116,10 @@ void gen_declaration(const char name[], int type, Scope scope) {
     fprintf(output, "push 0\n");
     break;
   }
-
 }
 
-// ----- READ AND PRINT FUNCTIONS -----
-
-void gen_read(const char name[], Scope scope) {
+// Verifies that the variable exists
+void gen_check(const char name[], Scope scope) {
   switch (scope) {
   case GLOBAL:
     glo_lookup(name);
@@ -87,9 +130,50 @@ void gen_read(const char name[], Scope scope) {
   }
 }
 
-void gen_print() {
+// ----- READ AND PRINT FUNCTIONS -----
+void gen_reade(const char name[]) {
+  if (loc_lookup(name) != INT) {
+    fprintf(stderr, "Need to be a INT in the reade() function\n");
+    return;
+  }
+  int l_addr = loc_get_addr(name);
+  int g_addr = glo_get_addr(name);
+  if (l_addr != -1) {
+    fprintf(output, "mov rax,rbp\nsub rax,%d\ncall reade\n",
+            loc_get_addr(name));
+    return;
+  }
+  fprintf(output, "mov rax,globals\nadd rax,%d\ncall reade\n", g_addr);
+}
+
+void gen_readc(const char name[]) {
+  if (loc_lookup(name) != CHAR) {
+    fprintf(stderr, "Need to be a CHAR in the readc() function\n");
+    return;
+  }
+  int l_addr = loc_get_addr(name);
+  int g_addr = glo_get_addr(name);
+  if (l_addr != -1) {
+    fprintf(output, "mov rax,rbp\nsub rax,%d\ncall readc\n",
+            loc_get_addr(name));
+    return;
+  }
+  fprintf(output, "mov rax,globals\nadd rax,%d\ncall readc\n", g_addr);
+}
+
+void gen_print(int type) {
+  //check if the name exists in both tables
   fprintf(output, "pop rax\n");
-  fprintf(output, "call print\n");
+  switch(type){
+    case INT:
+      fprintf(output, "call printe\n");
+    break;
+    case CHAR:
+      fprintf(output, "call printc\n");
+    break;
+    default: fprintf(stderr, "Error print, supposed to have type CHAR or INT");
+  }
+  
 }
 
 // ----- CONDITIONAL BRANCHING ------
@@ -119,20 +203,21 @@ void gen_ifelse_end(int idx) {
 // ----- OPERATORS -----
 
 int gen_assign(const char ident[], Scope scope) {
+  int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
   switch (scope) {
   case GLOBAL:
-    fprintf(output, "pop QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
+    fprintf(output, "pop QWORD [globals + %d] ;%s\n", g_addr,
+            ident);
     return glo_lookup(ident);
   case LOCAL:
-    if (g_addr == -1) {
-      fprintf(output, "pop QWORD [rbp - %d] ;%s\n", loc_get_addr(ident), ident);
+    if (l_addr != -1) {
+      fprintf(output, "pop QWORD [rbp - %d] ;%s\n", l_addr, ident);
       return loc_lookup(ident);
-    }
-    else {
+    } else {
       fprintf(output, "pop QWORD [globals + %d] ;%s\n", g_addr, ident);
       return glo_lookup(ident);
-    } 
+    }
   default:
     exit(1);
   }
@@ -187,7 +272,8 @@ void gen_eq(const char op[], int left, int right, int idx) {
   else
     exit(1); // TODO: error on unexpected op
 
-  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:", idx, idx, idx);
+  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:", idx, idx,
+          idx);
 }
 
 void gen_order(const char op[], int left, int right, int idx) {
@@ -200,14 +286,15 @@ void gen_order(const char op[], int left, int right, int idx) {
     fprintf(output, "jl .true%d\n", idx);
   else if (!strcmp(op, "<="))
     fprintf(output, "jle .true%d\n", idx);
-  else if(!strcmp(op, ">"))
+  else if (!strcmp(op, ">"))
     fprintf(output, "jg .true%d\n", idx);
-  else if(!strcmp(op, "<="))
+  else if (!strcmp(op, "<="))
     fprintf(output, "jge .true%d\n", idx);
   else
     exit(1); // TODO: error on unexpected op
 
-  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:", idx, idx, idx);
+  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:", idx, idx,
+          idx);
 }
 
 void gen_addsub(char op, int left, int right) {
@@ -265,34 +352,37 @@ int gen_negate_expr(int type) {
 }
 
 int gen_value(const char ident[], Scope scope) {
+  int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
   switch (scope) {
   case GLOBAL:
-    fprintf(output, "push QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
+    fprintf(output, "push QWORD [globals + %d] ;%s\n", g_addr,
+            ident);
     return glo_lookup(ident);
   case LOCAL:
-    if (g_addr == -1) {
-      fprintf(output, "push QWORD [rbp - %d] ;%s\n", loc_get_addr(ident), ident);
+    if (l_addr != -1) {
+      fprintf(output, "push QWORD [rbp - %d] ;%s\n", l_addr,
+              ident);
       return loc_lookup(ident);
-    }
-    else {
+    } else {
       fprintf(output, "push QWORD [globals + %d] ;%s\n", g_addr, ident);
       return glo_lookup(ident);
-    } 
+    }
   default:
     exit(1);
   }
 }
 
 int gen_num(int value, Scope scope) {
-  if (scope == LOCAL) fprintf(output, "push %d\n", value); // TODO: remove if?
+  if (scope == LOCAL)
+    fprintf(output, "push %d\n", value); // TODO: remove if?
   // stored for the semantic analysis.
 
   return INT;
 }
 
 int gen_char(int value, Scope scope) {
-  if(scope == LOCAL) fprintf(output, "push %d\n", value); // TODO: remove if?
+  if (scope == LOCAL)
+    fprintf(output, "push %d\n", value); // TODO: remove if?
   return CHAR;
 }
-

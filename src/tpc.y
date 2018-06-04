@@ -117,9 +117,9 @@ Instr:
 | ';'
 | RETURN Exp ';'
 | RETURN ';'
-| READE '(' IDENT ')' ';'        { gen_read($<ident>3, scope); }
-| READC '(' IDENT ')' ';'        { gen_read($<ident>3, scope); }
-| PRINT '(' Exp ')' ';'          { gen_print();}
+| READE '(' IDENT ')' ';'        { gen_reade($<ident>3); }
+| READC '(' IDENT ')' ';'        { gen_readc($<ident>3); }
+| PRINT '(' Exp ')' ';'          { gen_print($<type>3);}
 | IF '(' Exp IfHandling')' Instr { gen_if_label($<num>4); }
 | IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling
 | WHILE '(' Exp ')' Instr
@@ -166,8 +166,8 @@ F:
 | IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3);} 
 ;
 LValue:
-  IDENT                        { gen_read($<ident>1, scope); }
-| IDENT '[' Exp ']'            { gen_read($<ident>1, scope); }
+  IDENT                        { gen_check($<ident>1, scope); }
+| IDENT '[' Exp ']'            { gen_check($<ident>1, scope); }
 ;
 Arguments:
   ListExp
