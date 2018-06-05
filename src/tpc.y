@@ -166,8 +166,8 @@ F:
 | IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3); } 
 ;
 LValue:
-  IDENT                        { gen_check($<ident>1, scope); }
-| IDENT '[' Exp ']'            { gen_check($<ident>1, scope); }
+  IDENT                        { $$ = $1; gen_check($<ident>1, scope); }
+| IDENT '[' Exp ']'            { $$ = $1; gen_check($<ident>1, scope); }
 ;
 Arguments:
   ListExp
