@@ -100,9 +100,12 @@ void gen_function_declaration(const char name[], int return_type,
 void gen_function_end_declaration() {
   fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
 }
+
 int gen_function_call(const char name[], int nb_param) {
+  Type return_type = fun_lookup(name, nb_param);
   fprintf(output, "call %s\n", name);
-  return fun_lookup(name, nb_param);
+  if (return_type != VOID) fprintf(output, "push rax\n");
+  return return_type;
 }
 
 void gen_declaration(const char name[], int type, Scope scope) {
