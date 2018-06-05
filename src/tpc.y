@@ -23,6 +23,7 @@ static Type return_type = VOID_T;
 static int bss_done = 0;
 static int num_label = 0;
 static int num_if = 0;
+static int num_while = 0;
 static int nb_param[255];
 static int num_scope = -1;
 static char fname[64];
@@ -125,7 +126,7 @@ Instr:
 | PRINT '(' Exp ')' ';'          { gen_print($<type>3);}
 | IF '(' Exp IfHandling')' Instr { gen_if_label($<num>4); }
 | IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling
-| WHILE '(' Exp ')' Instr
+| WHILE '(' Exp ')' Instr 
 | '{' SuiteInstr '}'
 ;
 IfHandling:                       { gen_if_start($<num>$ = num_if++); };
