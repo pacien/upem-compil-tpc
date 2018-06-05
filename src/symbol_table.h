@@ -16,7 +16,8 @@
 
 typedef enum type {
   INT,
-  CHAR
+  CHAR,
+  VOID
 } Type;
 
 typedef struct {

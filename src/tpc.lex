@@ -7,6 +7,7 @@
 #include "tpc.tab.h"
 #define INT 0
 #define CHAR 1
+#define VOID 2
 int lineno = 1;
 %}
 
