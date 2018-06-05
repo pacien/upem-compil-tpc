@@ -1,0 +1,9 @@
+const c1 = 0;
+const c2 = 0;
+
+entier main(void) {
+  entier c1;
+  c1 = 0; /* expect no error */
+  c2 = 0; /* expect an error */
+  return 1;
+}
