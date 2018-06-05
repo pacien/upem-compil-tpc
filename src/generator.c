@@ -121,7 +121,7 @@ void gen_function_end_declaration(const char name[], int return_type,
 
 void gen_function_return(Type expect, Type actual) {
   if (actual != expect) {
-    fprintf(stderr, "Return type mismatch at line %d.", lineno);
+    fprintf(stderr, "Return type mismatch at line %d.\n", lineno);
     exit(1);
   }
   if (actual != VOID_T)
@@ -487,15 +487,11 @@ int gen_value_tab(const char ident[], Scope scope) {
   }
 }
 int gen_num(int value, Scope scope) {
-  if (scope == LOCAL)
-    fprintf(output, "push %d\n", value); // TODO: remove if?
-  // stored for the semantic analysis.
-
+  fprintf(output, "push %d\n", value);
   return INT;
 }
 
 int gen_char(int value, Scope scope) {
-  if (scope == LOCAL)
-    fprintf(output, "push %d\n", value); // TODO: remove if?
+  fprintf(output, "push %d\n", value);
   return CHAR;
 }

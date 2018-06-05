@@ -4,6 +4,15 @@ author: [Pacien TRAN-GIRARD, Adam NAILI]
 date: 2018-02-20
 ...
 
+# Usage
+	Après un `make`, `./tcompil < prog.tpc [-o prog.asm]`
+	
+	Pour faciliter les tests,
+	`make test FILE_TEST=test_file`
+	test_file est en réalité un fichier d'extension .tpc placé dans le répertoire res. (exemple: res/test_file.tpc).
+	Ceci génère un executable `test_file` dans le répertoire out.
+
+
 # Analyse lexicale
 
 L'analyse lexicale est réalisée avec Flex et est contenue dans le fichier `tpc.lex`.
