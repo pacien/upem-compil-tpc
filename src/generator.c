@@ -110,7 +110,7 @@ void gen_function_return(Type expect, Type actual) {
   gen_function_end_declaration();
 }
 
-int gen_function_call(const char name[], int nb_param) {
+Type gen_function_call(const char name[], int nb_param) {
   Type return_type = fun_lookup(name, nb_param);
   fprintf(output, "call %s\n", name);
   if (return_type != VOID_T) fprintf(output, "push rax\n");
