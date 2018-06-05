@@ -15,6 +15,11 @@
 #define MAXSYMBOLS 256
 #define MAXFUNCTIONS 256
 
+typedef enum scope {
+  GLOBAL,
+  LOCAL
+} Scope;
+
 typedef enum type {
   INT,
   CHAR,
@@ -54,12 +59,15 @@ void glo_addConst(const char name[]);
 int glo_lookup(const char name[]);
 int glo_get_addr(const char name[]);
 void glo_display_table();
+
 void loc_addVar(const char name[], int type);
 void loc_addConst(const char name[]);
 int loc_lookup(const char name[]);
 int loc_get_addr(const char name[]);
 void loc_display_table();
 void loc_clean_table();
+
 void check_expected_type(int type_to_check, int type_expected);
+bool is_read_only(const char name[], Scope scope);
 
 #endif
