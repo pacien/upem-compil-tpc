@@ -1,0 +1,13 @@
+/* test-table-symboles.tpc */
+
+/* Test file for simplified translator of a declaration of variables in C */
+
+entier main(void)  {
+	entier i;
+	i = 0;
+	while(i<=5){
+		print(i);
+		i = i + 1;
+	}
+	return 0;
+}
