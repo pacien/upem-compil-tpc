@@ -54,32 +54,32 @@ static char fname[64];
 %precedence ELSE
 
 %%
-Prog:                              { gen_prologue(); }
-  DeclConsts DeclVars DeclFoncts { gen_const_declaration(); }
+Prog:                               { gen_prologue(); }
+  DeclConsts DeclVars DeclFoncts    { gen_const_declaration(); }
 ;
 DeclConsts:
   DeclConsts CONST ListConst ';'
 |
 ;
 ListConst:
-  ListConst ',' IDENT '=' Litteral
-| IDENT '=' Litteral
+  ListConst ',' IDENT '=' Litteral  { gen_const($<ident>1, $<num>3, scope); }
+| IDENT '=' Litteral                { gen_const($<ident>1, $<num>3, scope); }
 ;
 Litteral:
-  NombreSigne
-| CARACTERE
+  NombreSigne                       { $<num>$ = $<num>1; }
+| CARACTERE                         { $<num>$ = $<num>1; }
 ;
 NombreSigne:
-  NUM
-| ADDSUB NUM
+  NUM                               { $<num>$ = $<num>1; }
+| ADDSUB NUM                        { $<num>$ = $<addsub>1 == '-' ? - $<num>2 : $<num>2; }
 ;
 DeclVars:
   DeclVars TYPE Declarateurs ';'
 |
 ;
 Declarateurs:
-  Declarateurs ',' Declarateur { gen_declaration($<ident>3, $<type>0, scope); }
-| Declarateur                  { gen_declaration($<ident>1, $<type>0, scope); }
+  Declarateurs ',' Declarateur      { gen_declaration($<ident>3, $<type>0, scope); }
+| Declarateur                       { gen_declaration($<ident>1, $<type>0, scope); }
 ;
 Declarateur:
   IDENT

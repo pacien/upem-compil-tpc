@@ -10,71 +10,74 @@
 void gen_prologue() {
   fprintf(output, "extern printf\nextern scanf\n");
   fprintf(output, "section .data\n");
+}
+
+void gen_prologue_continue(int *bss_done) {
+  if (*bss_done != 0) return;
+
   fprintf(output, "format_int db \"%%d\",10,0\n");
   fprintf(output, "format_char db \"%%c\",10,0\n");
   fprintf(output, "format_int_in: db \"%%d\", 0\n");
   fprintf(output, "format_char_in: db \"%%c\", 0\n\n");
   fprintf(output, "section .bss\n");
+
+  fprintf(output, "globals: resq %d\n", nb_globals);
+  fprintf(output, "section .text\n\nglobal _start\n");
+  fprintf(output, "\nprinte: ;print needs an argument in rax\n");
+  fprintf(output, "push rbp\n");
+  fprintf(output, "mov rbp, rsp\n");
+  fprintf(output, "push rsi\n");
+  fprintf(output, "push rdi\n");
+  fprintf(output, "mov rsi, rax\n");
+  fprintf(output, "mov rdi, format_int\n");
+  fprintf(output, "mov rax, 0\n");
+  fprintf(output, "call printf WRT ..plt\n");
+  fprintf(output, "pop rdi\n");
+  fprintf(output, "pop rsi\n");
+  fprintf(output, "pop rbp\n");
+  fprintf(output, "ret\n");
+  fprintf(output, "\nprintc: ;print needs an argument in rax\n");
+  fprintf(output, "push rbp\n");
+  fprintf(output, "mov rbp, rsp\n");
+  fprintf(output, "push rsi\n");
+  fprintf(output, "push rdi\n");
+  fprintf(output, "mov rsi, rax\n");
+  fprintf(output, "mov rdi, format_char\n");
+  fprintf(output, "mov rax, 0\n");
+  fprintf(output, "call printf WRT ..plt\n");
+  fprintf(output, "pop rdi\n");
+  fprintf(output, "pop rsi\n");
+  fprintf(output, "pop rbp\n");
+  fprintf(output, "ret\n");
+  fprintf(output, "\nreade: ;read needs an adress in rax\n");
+  fprintf(output, "push rbp\n");
+  fprintf(output, "mov rbp, rsp\n");
+  fprintf(output, "push rsi\n");
+  fprintf(output, "push rdi\n");
+  fprintf(output, "mov rsi, rax\n");
+  fprintf(output, "mov rdi, format_int_in\n");
+  fprintf(output, "mov rax, 0\n");
+  fprintf(output, "call scanf\n");
+  fprintf(output, "pop rdi\n");
+  fprintf(output, "pop rsi\n");
+  fprintf(output, "pop rbp\n");
+  fprintf(output, "ret\n");
+  fprintf(output, "\nreadc: ;read needs an adress in rax\n");
+  fprintf(output, "push rbp\n");
+  fprintf(output, "mov rbp, rsp\n");
+  fprintf(output, "push rsi\n");
+  fprintf(output, "push rdi\n");
+  fprintf(output, "mov rsi, rax\n");
+  fprintf(output, "mov rdi, format_char_in\n");
+  fprintf(output, "mov rax, 0\n");
+  fprintf(output, "call scanf\n");
+  fprintf(output, "pop rdi\n");
+  fprintf(output, "pop rsi\n");
+  fprintf(output, "pop rbp\n");
+  fprintf(output, "ret\n");
+  *bss_done = 1;
 }
-void gen_prologue_continue(int *bss_done) {
-  if (*bss_done == 0) {
-    fprintf(output, "globals: resq %d\n", nb_globals);
-    fprintf(output, "section .text\n\nglobal _start\n");
-    fprintf(output, "\nprinte: ;print needs an argument in rax\n");
-    fprintf(output, "push rbp\n");
-    fprintf(output, "mov rbp, rsp\n");
-    fprintf(output, "push rsi\n");
-    fprintf(output, "push rdi\n");
-    fprintf(output, "mov rsi, rax\n");
-    fprintf(output, "mov rdi, format_int\n");
-    fprintf(output, "mov rax, 0\n");
-    fprintf(output, "call printf WRT ..plt\n");
-    fprintf(output, "pop rdi\n");
-    fprintf(output, "pop rsi\n");
-    fprintf(output, "pop rbp\n");
-    fprintf(output, "ret\n");
-    fprintf(output, "\nprintc: ;print needs an argument in rax\n");
-    fprintf(output, "push rbp\n");
-    fprintf(output, "mov rbp, rsp\n");
-    fprintf(output, "push rsi\n");
-    fprintf(output, "push rdi\n");
-    fprintf(output, "mov rsi, rax\n");
-    fprintf(output, "mov rdi, format_char\n");
-    fprintf(output, "mov rax, 0\n");
-    fprintf(output, "call printf WRT ..plt\n");
-    fprintf(output, "pop rdi\n");
-    fprintf(output, "pop rsi\n");
-    fprintf(output, "pop rbp\n");
-    fprintf(output, "ret\n");
-    fprintf(output, "\nreade: ;read needs an adress in rax\n");
-    fprintf(output, "push rbp\n");
-    fprintf(output, "mov rbp, rsp\n");
-    fprintf(output, "push rsi\n");
-    fprintf(output, "push rdi\n");
-    fprintf(output, "mov rsi, rax\n");
-    fprintf(output, "mov rdi, format_int_in\n");
-    fprintf(output, "mov rax, 0\n");
-    fprintf(output, "call scanf\n");
-    fprintf(output, "pop rdi\n");
-    fprintf(output, "pop rsi\n");
-    fprintf(output, "pop rbp\n");
-    fprintf(output, "ret\n");
-    fprintf(output, "\nreadc: ;read needs an adress in rax\n");
-    fprintf(output, "push rbp\n");
-    fprintf(output, "mov rbp, rsp\n");
-    fprintf(output, "push rsi\n");
-    fprintf(output, "push rdi\n");
-    fprintf(output, "mov rsi, rax\n");
-    fprintf(output, "mov rdi, format_char_in\n");
-    fprintf(output, "mov rax, 0\n");
-    fprintf(output, "call scanf\n");
-    fprintf(output, "pop rdi\n");
-    fprintf(output, "pop rsi\n");
-    fprintf(output, "pop rbp\n");
-    fprintf(output, "ret\n");
-    *bss_done = 1;
-  }
-}
+
 void gen_const_declaration() {
   fprintf(output, "\n_start:\n");
   fprintf(output, "push rbp\nmov rbp, rsp\n\n");
@@ -88,6 +91,20 @@ void gen_const_declaration() {
   loc_display_table();
   fprintf(output, ";function table\n");
   fun_display_table();
+}
+
+void gen_const(const char name[], int value, Scope scope) {
+  switch (scope) {
+  case LOCAL:
+    loc_addVar(name, INT); // TODO: make read only
+    fprintf(output, "push %d\n", value);
+    return;
+
+  case GLOBAL:
+    glo_addVar(name, INT); // TODO: make read only
+    fprintf(output, "%s: db QWORD %d\n", name, value);
+    return;
+  }
 }
 
 Type gen_function_declaration(const char name[], int return_type) {
