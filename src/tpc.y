@@ -5,8 +5,7 @@
  *
  *	TODO :
  *  ------
- * - Gestion des tableaux
- * - Fonctions avec paramètres et retour de fonctions (void fonctions déjà fonctionnelles)
+ * - arrays
  *
  */
 
