@@ -102,7 +102,7 @@ void gen_const(const char name[], int value, Scope scope) {
 
   case GLOBAL:
     glo_addConst(name);
-    fprintf(output, "%s: db QWORD %d\n", name, value);
+    fprintf(output, "%s dq %d\n", name, value);
     return;
   }
 }
