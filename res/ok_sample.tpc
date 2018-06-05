@@ -14,7 +14,7 @@ void main(void) {
   entier ret;
   ret = 1 + funky_func(0) * 2;
 
-  while (ret) {
+  while (1) {
     reade(ret);
     print(ret);
   }
