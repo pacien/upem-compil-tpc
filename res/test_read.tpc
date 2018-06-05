@@ -4,12 +4,9 @@
 entier r1,b,s,c,r2 ;
 caractere letter, digit, punct; 
 
-void calcul(void) {
- 	caractere r1;
-	readc(r1);
-	print(r1);
-}
 
 entier main(void)  {
-	calcul();
+	caractere r1;
+	readc(r1);
+	print(r1);
 }

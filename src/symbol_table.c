@@ -203,7 +203,7 @@ static char *string_of_type(int type) {
     return "INT";
   case CHAR:
     return "CHAR";
-  case VOID:
+  case VOID_T:
     return "VOID";
   default:
     return "UNEXPECTED";

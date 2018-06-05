@@ -7,6 +7,7 @@
 #define __GENERATOR_H__
 
 #include <stdio.h>
+#include "symbol_table.h"
 
 typedef enum scope {
   GLOBAL,
@@ -14,6 +15,7 @@ typedef enum scope {
 } Scope;
 
 extern int nb_globals;
+extern int lineno;
 FILE *output;
 
 void gen_prologue();
