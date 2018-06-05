@@ -37,7 +37,7 @@ IFLAGS += -I$(SRC_DIR) -I$(OUT_DIR)
 all: clean $(OUT_DIR)/$(COMPIL_BIN)
 
 test: $(OUT_DIR)/$(FILE_TEST).o
-	$(CC) $< -o $(OUT_DIR)/$(FILE_TEST) -nostartfiles
+	$(CC) $< -o $(OUT_DIR)/$(FILE_TEST) -nostartfiles -no-pie
 
 $(OUT_DIR)/$(FILE_TEST).o: $(OUT_DIR)/$(FILE_TEST).asm
 	$(ASM) $(AFLAGS) $< -o $@
