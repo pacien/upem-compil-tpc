@@ -87,15 +87,24 @@ Dans les langages tel que le C, l'associativité se fait à gauche.
 On déclare donc `%left ,` pour l'indiquer à Bison.
 
 
+# Génération de code cible
+
+## Gestion de la mémoire
+
+Pour des raisons de simplicité, il a été choisi de travailler principalement sur la pile. Son utilisation simplifie le changement de contexte à l'entrée et à la sortie de fonctions, en plus de permettre la réduction aisée des expressions lors de l'exécution.
+
+## Fonctions
+
+Il a été choisi d'effectuer le passage des paramamètres simples (de types `entier` et `caractere`) par copie pour des raisons de simplicité et de sécurité, pour permettre une certaine isolation des contextes lors de l'entrée dans une fonction.
+
+Les fonction valuées retournent leur valeur en suivant les conventions d'appel des fonctions C, c'est-à-dire en la plaçant dans le registre `rax`. L'appelant récupère ensuite cette valeur pour pouvoir la stocker dans la pile.
+
+L'analyse statique des branchements étant un problème relativement complexe, il a été choisi de retourner une valeur par défaut (`-1`) en cas d'absence d'instruction de retour dans une fonction valuée.
+
+
 # Améliorations enviseageables
 
 ## Récupération sur erreur
 
 Nous pourrions envisager de parser entièrement le fichier et de ne pas s'arrêter dès la première erreur de syntaxe comme le fait `gcc`.
 Il est possible de réaliser ceci en modifiant le code de `yyerror()` par exemple.
-
-## Numérotation des lignes 
-
-En complément de la précédente amélioration, nous pourrions imaginer donner les lignes dans le message d'erreur de syntaxe.
-Il suffit de maintenir une variable globale incrémentée à chaque saut de ligne `\n`
-
