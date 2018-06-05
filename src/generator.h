@@ -10,11 +10,6 @@
 #include <stdbool.h>
 #include "symbol_table.h"
 
-typedef enum scope {
-  GLOBAL,
-  LOCAL
-} Scope;
-
 extern int nb_globals;
 extern int lineno;
 FILE *output;
@@ -32,8 +27,8 @@ Type gen_function_call(const char name[], int nb_param);
 void gen_declaration(const char name[], int type, Scope scope);
 void gen_check(const char name[], Scope scope);
 
-void gen_reade(const char name[]);
-void gen_readc(const char name[]);
+void gen_reade(const char name[], Scope scope);
+void gen_readc(const char name[], Scope scope);
 
 void gen_print(int type);
 

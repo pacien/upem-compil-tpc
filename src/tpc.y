@@ -121,8 +121,8 @@ Instr:
 | ';'
 | RETURN Exp ';'                 { gen_function_return(return_type, $<type>2); }
 | RETURN ';'                     { gen_function_return(return_type, VOID_T);}
-| READE '(' IDENT ')' ';'        { gen_reade($<ident>3); }
-| READC '(' IDENT ')' ';'        { gen_readc($<ident>3); }
+| READE '(' IDENT ')' ';'        { gen_reade($<ident>3, scope); }
+| READC '(' IDENT ')' ';'        { gen_readc($<ident>3, scope); }
 | PRINT '(' Exp ')' ';'          { gen_print($<type>3);}
 | IF '(' Exp IfHandling')' Instr { gen_if_label($<num>4); }
 | IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling

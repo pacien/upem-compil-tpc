@@ -228,3 +228,23 @@ void check_expected_type(int type_to_check, int type_expected) {
             string_of_type(type_expected), string_of_type(type_to_check),
             lineno);
 }
+
+/* returns false if symbol can't be found too */
+bool is_read_only(const char name[], Scope scope) {
+  int count;
+
+  switch (scope) {
+  case LOCAL:
+    for (count = 0; count < loc_symbol_table.size; count++)
+      if (!strcmp(loc_symbol_table.entries[count].name, name))
+        return loc_symbol_table.entries[count].read_only;
+
+  case GLOBAL:
+    for (count = 0; count < glo_symbol_table.size; count++)
+      if (!strcmp(glo_symbol_table.entries[count].name, name))
+        return glo_symbol_table.entries[count].read_only;
+
+  default:
+    return false;
+  }
+}

@@ -159,7 +159,12 @@ void gen_check(const char name[], Scope scope) {
 }
 
 // ----- READ AND PRINT FUNCTIONS -----
-void gen_reade(const char name[]) {
+void gen_reade(const char name[], Scope scope) {
+  if (is_read_only(name, scope)) {
+     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, scope);
+     exit(1);
+  }
+
   if (loc_lookup(name) != INT) {
     fprintf(stderr, "Need to be a INT in the reade() function\n");
     return;
@@ -174,7 +179,12 @@ void gen_reade(const char name[]) {
   fprintf(output, "mov rax,globals\nadd rax,%d\ncall reade\n", g_addr);
 }
 
-void gen_readc(const char name[]) {
+void gen_readc(const char name[], Scope scope) {
+  if (is_read_only(name, scope)) {
+     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, scope);
+     exit(1);
+  }
+
   if (loc_lookup(name) != CHAR) {
     fprintf(stderr, "Need to be a CHAR in the readc() function\n");
     return;
@@ -233,6 +243,12 @@ void gen_ifelse_end(int idx) {
 int gen_assign(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
+
+  if (is_read_only(ident, scope)) {
+     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", ident, scope);
+     exit(1);
+  }
+
   switch (scope) {
   case GLOBAL:
     fprintf(output, "pop QWORD [globals + %d] ;%s\n", g_addr,
