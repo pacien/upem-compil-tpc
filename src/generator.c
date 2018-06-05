@@ -161,7 +161,7 @@ void gen_check(const char name[], Scope scope) {
 // ----- READ AND PRINT FUNCTIONS -----
 void gen_reade(const char name[], Scope scope) {
   if (is_read_only(name, scope)) {
-     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, scope);
+     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, lineno);
      exit(1);
   }
 
@@ -181,7 +181,7 @@ void gen_reade(const char name[], Scope scope) {
 
 void gen_readc(const char name[], Scope scope) {
   if (is_read_only(name, scope)) {
-     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, scope);
+     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, lineno);
      exit(1);
   }
 
@@ -245,7 +245,7 @@ int gen_assign(const char ident[], Scope scope) {
   int g_addr = glo_get_addr(ident);
 
   if (is_read_only(ident, scope)) {
-     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", ident, scope);
+     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", ident, lineno);
      exit(1);
   }
 
