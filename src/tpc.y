@@ -23,7 +23,8 @@ static Type return_type = VOID_T;
 static int bss_done = 0;
 static int num_label = 0;
 static int num_if = 0;
-static int nb_param = 0;
+static int nb_param[255];
+static int num_scope = -1;
 static char fname[64];
 %}
 
@@ -90,11 +91,11 @@ DeclFoncts:
 ;
 DeclFonct:
   EnTeteFonct { scope = LOCAL; }
-  Corps       { gen_function_end_declaration(fname,return_type,nb_param); scope = GLOBAL; return_type = VOID_T; }
+  Corps       { gen_function_end_declaration(fname,return_type,nb_param[num_scope]); scope = GLOBAL; return_type = VOID_T; num_scope--; loc_clean_table(); }
 ;
 EnTeteFonct:
-  TYPE IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, $<type>1);} '(' Parametres ')' { nb_param = $<num>6 ;  scope = GLOBAL;}
-| VOID IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, VOID_T);} '(' Parametres ')' { nb_param = $<num>6 ; scope = GLOBAL; }
+  TYPE IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, $<type>1);} '(' Parametres ')' { nb_param[++num_scope] = $<num>6 ;  scope = GLOBAL;}
+| VOID IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, VOID_T);} '(' Parametres ')' { nb_param[++num_scope] = $<num>6 ; scope = GLOBAL; }
 ;
 
 PrologueCont: {scope = LOCAL;gen_prologue_continue(&bss_done);};
@@ -108,7 +109,7 @@ ListTypVar:
 | TYPE IDENT                { gen_declaration($<ident>2, $<type>1, scope); $<num>$ = 1; }
 ;
 Corps:
-  '{' {int i; for(i=1;i<=nb_param;i++){fprintf(output, "mov r8, [rbp + %d]\nmov [rbp - %d], r8\n", (nb_param-i+2)*8, i*8);}  } DeclConsts DeclVars SuiteInstr '}'
+  '{' {int i; for(i=1;i<=nb_param[num_scope];i++){fprintf(output, "mov r8, [rbp + %d]\nmov [rbp - %d], r8\n", (nb_param[num_scope]-i+2)*8, i*8);} } DeclConsts DeclVars SuiteInstr '}'
 ;
 SuiteInstr:
   SuiteInstr Instr

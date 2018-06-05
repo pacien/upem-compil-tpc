@@ -55,6 +55,7 @@ void loc_addVar(const char name[], int type);
 int loc_lookup(const char name[]);
 int loc_get_addr(const char name[]);
 void loc_display_table();
+void loc_clean_table();
 void check_expected_type(int type_to_check, int type_expected);
 
 #endif

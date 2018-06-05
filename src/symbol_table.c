@@ -190,10 +190,6 @@ void loc_display_table() {
 }
 
 void loc_clean_table() {
-  int i;
-  for (i = 0; i < loc_symbol_table.size; i++) {
-    fprintf(output, "pop eax\n");
-  }
   loc_symbol_table.size = 0;
 }
 
