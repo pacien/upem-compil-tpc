@@ -13,7 +13,8 @@ void gen_prologue() {
 }
 
 void gen_prologue_continue(int *bss_done) {
-  if (*bss_done != 0) return;
+  if (*bss_done != 0)
+    return;
 
   fprintf(output, "format_int db \"%%d\",10,0\n");
   fprintf(output, "format_char db \"%%c\",10,0\n");
@@ -112,9 +113,10 @@ Type gen_function_declaration(const char name[], int return_type) {
   return return_type;
 }
 
-void gen_function_end_declaration(const char name[], int return_type, int nb_param) {
+void gen_function_end_declaration(const char name[], int return_type,
+                                  int nb_param) {
   fun_add(name, return_type, nb_param);
-  fprintf(output, "mov rax,-1\nmov rsp, rbp\npop rbp\nret\n"); 
+  fprintf(output, "mov rax,-1\nmov rsp, rbp\npop rbp\nret\n");
 }
 
 void gen_function_return(Type expect, Type actual) {
@@ -122,14 +124,16 @@ void gen_function_return(Type expect, Type actual) {
     fprintf(stderr, "Return type mismatch at line %d.", lineno);
     exit(1);
   }
-  if (actual != VOID_T) fprintf(output, "pop rax\n");
+  if (actual != VOID_T)
+    fprintf(output, "pop rax\n");
   fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
 }
 
 Type gen_function_call(const char name[], int nb_param) {
   Type return_type = fun_lookup(name, nb_param);
   fprintf(output, "call %s\n", name);
-  if (return_type != VOID_T) fprintf(output, "push rax\n");
+  if (return_type != VOID_T)
+    fprintf(output, "push rax\n");
   return return_type;
 }
 
@@ -142,6 +146,21 @@ void gen_declaration(const char name[], int type, Scope scope) {
   case LOCAL:
     loc_addVar(name, type);
     fprintf(output, "push 0\n");
+    break;
+  }
+}
+
+void gen_tab_declaration(const char name[], Scope scope, int size) {
+  switch (scope) {
+  case GLOBAL:
+    glo_addVar(name, TAB);
+    nb_globals = nb_globals + size;
+    break;
+  case LOCAL:
+    loc_addVar(name, TAB);
+    for (int i = 0; i < size; ++i) {
+      fprintf(output, "push 0\n");
+    }
     break;
   }
 }
@@ -161,8 +180,8 @@ void gen_check(const char name[], Scope scope) {
 // ----- READ AND PRINT FUNCTIONS -----
 void gen_reade(const char name[], Scope scope) {
   if (is_read_only(name, scope)) {
-     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, lineno);
-     exit(1);
+    fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, lineno);
+    exit(1);
   }
 
   if (loc_lookup(name) != INT) {
@@ -181,8 +200,8 @@ void gen_reade(const char name[], Scope scope) {
 
 void gen_readc(const char name[], Scope scope) {
   if (is_read_only(name, scope)) {
-     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, lineno);
-     exit(1);
+    fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", name, lineno);
+    exit(1);
   }
 
   if (loc_lookup(name) != CHAR) {
@@ -200,18 +219,21 @@ void gen_readc(const char name[], Scope scope) {
 }
 
 void gen_print(int type) {
-  //check if the name exists in both tables
+  // check if the name exists in both tables
   fprintf(output, "pop rax\n");
-  switch(type){
-    case INT:
-      fprintf(output, "call printe\n");
+  switch (type) {
+  case INT:
+    fprintf(output, "call printe\n");
     break;
-    case CHAR:
-      fprintf(output, "call printc\n");
+  case CHAR:
+    fprintf(output, "call printc\n");
     break;
-    default: fprintf(stderr, "Error print, supposed to have type CHAR or INT\n");
+  case TAB:
+    fprintf(output, "call printe\n");
+    break;
+  default:
+    fprintf(stderr, "Error print, supposed to have type CHAR or INT or TAB\n");
   }
-  
 }
 
 // ----- CONDITIONAL BRANCHING ------
@@ -245,14 +267,13 @@ int gen_assign(const char ident[], Scope scope) {
   int g_addr = glo_get_addr(ident);
 
   if (is_read_only(ident, scope)) {
-     fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", ident, lineno);
-     exit(1);
+    fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", ident, lineno);
+    exit(1);
   }
 
   switch (scope) {
   case GLOBAL:
-    fprintf(output, "pop QWORD [globals + %d] ;%s\n", g_addr,
-            ident);
+    fprintf(output, "pop QWORD [globals + %d] ;%s\n", g_addr, ident);
     return glo_lookup(ident);
   case LOCAL:
     if (l_addr != -1) {
@@ -267,9 +288,35 @@ int gen_assign(const char ident[], Scope scope) {
   }
 }
 
+int gen_assign_tab(const char ident[], Scope scope) {
+  int l_addr = loc_get_addr(ident);
+  int g_addr = glo_get_addr(ident);
+
+  if (is_read_only(ident, scope)) {
+    fprintf(stderr, "Symbol \"%s\" at line %d is read only.\n", ident, lineno);
+    exit(1);
+  }
+
+  switch (scope) {
+  case GLOBAL:
+    fprintf(output, "pop r8 ;EXP\npop rcx ;offset\npush r8\nimul rcx,8\nmov rax,globals\n add rax,rcx\npop QWORD [rax + %d] ;%s\n", g_addr, ident);
+    return glo_lookup(ident);
+  case LOCAL:
+    if (l_addr != -1) {
+      fprintf(output, "pop r8 ;EXP\npop rcx ;offset\npush r8\nimul rcx,8\nmov rax,rbp\nsub rax,rcx\npop QWORD [rax - %d] ;%s\n", l_addr, ident);
+      return loc_lookup(ident);
+    } else {
+      fprintf(output, "pop r8 ;EXP\npop rcx ;offset\npush r8\nimul rcx,8\nmov rax,globals\n add rax,rcx\npop QWORD [rax + %d] ;%s\n", g_addr, ident);
+      return glo_lookup(ident);
+    }
+  default:
+    exit(1);
+  }
+}
+
 void gen_or(int left, int right, int idx) {
-  check_expected_type(left, INT);
-  check_expected_type(right, INT);
+  check_expected_types(left, INT,TAB);
+  check_expected_types(right, INT,TAB);
 
   fprintf(output, ";a OR c\n");
   fprintf(output, "pop rax\n");
@@ -286,8 +333,8 @@ void gen_or(int left, int right, int idx) {
 }
 
 void gen_and(int left, int right, int idx) {
-  check_expected_type(left, INT);
-  check_expected_type(right, INT);
+  check_expected_types(left, INT,TAB);
+  check_expected_types(right, INT,TAB);
 
   fprintf(output, ";a AND c\n");
   fprintf(output, "pop rax\n");
@@ -304,8 +351,8 @@ void gen_and(int left, int right, int idx) {
 }
 
 void gen_eq(const char op[], int left, int right, int idx) {
-  check_expected_type(left, INT);
-  check_expected_type(right, INT);
+  check_expected_types(left, INT,TAB);
+  check_expected_types(right, INT,TAB);
 
   fprintf(output, ";a EQ c\npop rax\npop rcx\ncmp rax,rcx\n");
 
@@ -316,13 +363,13 @@ void gen_eq(const char op[], int left, int right, int idx) {
   else
     exit(1); // TODO: error on unexpected op
 
-  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:\n", idx, idx,
-          idx);
+  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:\n", idx,
+          idx, idx);
 }
 
 void gen_order(const char op[], int left, int right, int idx) {
-  check_expected_type(left, INT);
-  check_expected_type(right, INT);
+  check_expected_types(left, INT,TAB);
+  check_expected_types(right, INT,TAB);
 
   fprintf(output, ";a ORDER c\npop rcx\npop rax\ncmp rax,rcx\n");
 
@@ -337,13 +384,13 @@ void gen_order(const char op[], int left, int right, int idx) {
   else
     exit(1); // TODO: error on unexpected op
 
-  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:\n", idx, idx,
-          idx);
+  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:\n", idx,
+          idx, idx);
 }
 
 void gen_addsub(char op, int left, int right) {
-  check_expected_type(left, INT);
-  check_expected_type(right, INT);
+  check_expected_types(left, INT,TAB);
+  check_expected_types(right, INT,TAB);
 
   switch (op) {
   case '+':
@@ -358,8 +405,8 @@ void gen_addsub(char op, int left, int right) {
 }
 
 void gen_divstar(char op, int left, int right) {
-  check_expected_type(left, INT);
-  check_expected_type(right, INT);
+  check_expected_types(left, INT,TAB);
+  check_expected_types(right, INT,TAB);
 
   switch (op) {
   case '*':
@@ -376,6 +423,7 @@ void gen_divstar(char op, int left, int right) {
 }
 
 int gen_signed_expr(char op, int type) {
+  check_expected_types(type, INT,TAB);
   switch (op) {
   case '+':
     fprintf(output, ";+F\n");
@@ -391,6 +439,7 @@ int gen_signed_expr(char op, int type) {
 }
 
 int gen_negate_expr(int type) {
+  check_expected_types(type, INT,TAB);
   fprintf(output, ";!F\npop rax\nxor rax,1\npush rax\n");
   return type;
 }
@@ -409,7 +458,8 @@ int gen_value(const char ident[], Scope scope) {
     if (is_read_only(ident, scope))
       fprintf(output, "push QWORD %s\n", ident);
     else
-      fprintf(output, "push QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
+      fprintf(output, "push QWORD [globals + %d] ;%s\n", glo_get_addr(ident),
+              ident);
 
     return glo_lookup(ident);
 
@@ -417,7 +467,25 @@ int gen_value(const char ident[], Scope scope) {
     exit(1);
   }
 }
-
+int gen_value_tab(const char ident[], Scope scope) {
+  int l_addr = loc_get_addr(ident);
+  int g_addr = glo_get_addr(ident);
+  switch (scope) {
+  case GLOBAL:
+    fprintf(output, "pop rcx ;offset\nimul rcx,8\nmov rax,globals\n add rax,rcx\npush QWORD [rax + %d] ;%s\n", g_addr, ident);
+    return glo_lookup(ident);
+  case LOCAL:
+    if (l_addr != -1) {
+      fprintf(output, "pop rcx ;offset\nimul rcx,8\nmov rax,rbp\nsub rax,rcx\npush QWORD [rax - %d] ;%s\n", l_addr, ident);
+      return loc_lookup(ident);
+    } else {
+      fprintf(output, "pop rcx ;offset\nimul rcx,8\nmov rax,globals\n add rax,rcx\npush QWORD [rax + %d] ;%s\n", g_addr, ident);
+      return glo_lookup(ident);
+    }
+  default:
+    exit(1);
+  }
+}
 int gen_num(int value, Scope scope) {
   if (scope == LOCAL)
     fprintf(output, "push %d\n", value); // TODO: remove if?

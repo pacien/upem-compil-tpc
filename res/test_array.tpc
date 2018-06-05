@@ -1,0 +1,10 @@
+entier tab[5];
+
+entier main(void)  {
+	tab[1]=3;
+	tab[2]=22;
+	print(tab[2]+tab[1]);
+	print(tab[1]);
+	print(tab[2]);
+	return 0;
+}

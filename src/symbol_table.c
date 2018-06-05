@@ -217,15 +217,23 @@ static char *string_of_type(int type) {
     return "CHAR";
   case VOID_T:
     return "VOID";
+  case TAB:
+    return "TAB";
   default:
     return "UNEXPECTED";
   }
 }
 
-void check_expected_type(int type_to_check, int type_expected) {
+void check_expected_type(Type type_to_check, Type type_expected) {
   if (type_to_check != type_expected)
     fprintf(stderr, "Expected type : %s -> Got type : %s (near line %d)\n",
             string_of_type(type_expected), string_of_type(type_to_check),
+            lineno);
+}
+void check_expected_types(Type type_to_check, Type type_expected1, Type type_expected2) {
+  if (type_to_check != type_expected1 && type_to_check != type_expected2)
+    fprintf(stderr, "Expected type : %s OR %s-> Got type : %s (near line %d)\n",
+            string_of_type(type_expected1), string_of_type(type_expected2), string_of_type(type_to_check),
             lineno);
 }
 

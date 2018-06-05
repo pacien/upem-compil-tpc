@@ -23,7 +23,8 @@ typedef enum scope {
 typedef enum type {
   INT,
   CHAR,
-  VOID_T
+  VOID_T,
+  TAB
 } Type;
 
 typedef struct {
@@ -67,7 +68,8 @@ int loc_get_addr(const char name[]);
 void loc_display_table();
 void loc_clean_table();
 
-void check_expected_type(int type_to_check, int type_expected);
+void check_expected_type(Type type_to_check, Type type_expected);
+void check_expected_types(Type type_to_check, Type type_expected1, Type type_expected2);
 bool is_read_only(const char name[], Scope scope);
 
 #endif
