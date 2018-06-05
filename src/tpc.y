@@ -164,7 +164,7 @@ F:
 | LValue                        { $$ = gen_value($<ident>1, scope); }
 | NUM                           { $$ = gen_num($1, scope); }
 | CARACTERE                     { $$ = gen_char($1, scope); }
-| IDENT '(' Arguments  ')'      { return_type = fun_lookup($<ident>1,$<num>3);$$ = gen_function_call($<ident>1,$<num>3); } 
+| IDENT '(' Arguments  ')'      { $$ = (return_type = gen_function_call($<ident>1,$<num>3)); }
 ;
 LValue:
   IDENT                        { gen_check($<ident>1, scope); }

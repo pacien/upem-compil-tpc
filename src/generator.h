@@ -24,7 +24,7 @@ void gen_const_declaration();
 Type gen_function_declaration(const char name[], int return_type, int nb_param);
 void gen_function_end_declaration();
 void gen_function_return(Type expect, Type actual);
-int gen_function_call(const char name[], int nb_param);
+Type gen_function_call(const char name[], int nb_param);
 void gen_declaration(const char name[], int type, Scope scope);
 void gen_check(const char name[], Scope scope);
 
