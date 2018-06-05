@@ -6,19 +6,17 @@
 
 const special = 'b';
 
-caractere funky_func(entier arg) {
+entier funky_func(entier arg) {
   return !arg;
 }
 
 void main(void) {
-  caractere ret;
+  entier ret;
   ret = 1 + funky_func(0) * 2;
 
   while (ret) {
-    readc(ret);
+    reade(ret);
     print(ret);
-
-    if (ret == special) print('!');
   }
 }
 
