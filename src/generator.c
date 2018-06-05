@@ -397,21 +397,22 @@ int gen_negate_expr(int type) {
 
 int gen_value(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
-  int g_addr = glo_get_addr(ident);
+
   switch (scope) {
-  case GLOBAL:
-    fprintf(output, "push QWORD [globals + %d] ;%s\n", g_addr,
-            ident);
-    return glo_lookup(ident);
   case LOCAL:
     if (l_addr != -1) {
-      fprintf(output, "push QWORD [rbp - %d] ;%s\n", l_addr,
-              ident);
+      fprintf(output, "push QWORD [rbp - %d] ;%s\n", l_addr, ident);
       return loc_lookup(ident);
-    } else {
-      fprintf(output, "push QWORD [globals + %d] ;%s\n", g_addr, ident);
-      return glo_lookup(ident);
     }
+
+  case GLOBAL:
+    if (is_read_only(ident, scope))
+      fprintf(output, "push QWORD %s\n", ident);
+    else
+      fprintf(output, "push QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
+
+    return glo_lookup(ident);
+
   default:
     exit(1);
   }
