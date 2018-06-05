@@ -66,7 +66,7 @@ int fun_lookup(const char name[], int nb_param) {
   return -1;
 }
 
-void glo_addVar(const char name[], int type) {
+static void glo_add(const char name[], int type, bool read_only) {
   int count;
   for (count = 0; count < glo_symbol_table.size; count++) {
     if (!strcmp(glo_symbol_table.entries[count].name, name)) {
@@ -82,8 +82,16 @@ void glo_addVar(const char name[], int type) {
   }
   strcpy(glo_symbol_table.entries[glo_symbol_table.size - 1].name, name);
   glo_symbol_table.entries[glo_symbol_table.size - 1].type = type;
-  glo_symbol_table.entries[glo_symbol_table.size - 1].addr =
-      (glo_symbol_table.size - 1) * 8;
+  glo_symbol_table.entries[glo_symbol_table.size - 1].addr = (glo_symbol_table.size - 1) * 8;
+  glo_symbol_table.entries[glo_symbol_table.size - 1].read_only = read_only;
+}
+
+void glo_addVar(const char name[], int type) {
+  glo_add(name, type, false);
+}
+
+void glo_addConst(const char name[]) {
+  glo_add(name, INT, true);
 }
 
 // Verifies that the variable exists and returns the type
@@ -125,7 +133,7 @@ void glo_display_table() {
   fprintf(output, "\n");
 }
 
-void loc_addVar(const char name[], int type) {
+static void loc_add(const char name[], int type, bool read_only) {
   int count;
   for (count = 0; count < loc_symbol_table.size; count++) {
     if (!strcmp(loc_symbol_table.entries[count].name, name)) {
@@ -141,8 +149,16 @@ void loc_addVar(const char name[], int type) {
   }
   strcpy(loc_symbol_table.entries[loc_symbol_table.size - 1].name, name);
   loc_symbol_table.entries[loc_symbol_table.size - 1].type = type;
-  loc_symbol_table.entries[loc_symbol_table.size - 1].addr =
-      (loc_symbol_table.size - 1) * 8 + 8;
+  loc_symbol_table.entries[loc_symbol_table.size - 1].addr = (loc_symbol_table.size - 1) * 8 + 8;
+  loc_symbol_table.entries[loc_symbol_table.size - 1].read_only = read_only;
+}
+
+void loc_addVar(const char name[], int type) {
+  loc_add(name, type, false);
+}
+
+void loc_addConst(const char name[]) {
+  loc_add(name, INT, true);
 }
 
 int loc_lookup(const char name[]) {

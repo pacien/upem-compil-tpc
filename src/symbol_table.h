@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define MAXNAME 32
 #define MAXSYMBOLS 256
@@ -24,6 +25,7 @@ typedef struct {
   char name[MAXNAME];
   int type;
   int addr;
+  bool read_only;
 } STentry;
 
 typedef struct {
@@ -48,10 +50,12 @@ void fun_add(const char name[], int rt_type, int nb_par);
 void fun_display_table();
 int fun_lookup(const char name[], int nb_param);
 void glo_addVar(const char name[], int type);
+void glo_addConst(const char name[]);
 int glo_lookup(const char name[]);
 int glo_get_addr(const char name[]);
 void glo_display_table();
 void loc_addVar(const char name[], int type);
+void loc_addConst(const char name[]);
 int loc_lookup(const char name[]);
 int loc_get_addr(const char name[]);
 void loc_display_table();

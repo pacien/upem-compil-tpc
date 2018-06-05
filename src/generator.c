@@ -96,12 +96,12 @@ void gen_const_declaration() {
 void gen_const(const char name[], int value, Scope scope) {
   switch (scope) {
   case LOCAL:
-    loc_addVar(name, INT); // TODO: make read only
+    loc_addConst(name);
     fprintf(output, "push %d\n", value);
     return;
 
   case GLOBAL:
-    glo_addVar(name, INT); // TODO: make read only
+    glo_addConst(name);
     fprintf(output, "%s: db QWORD %d\n", name, value);
     return;
   }
