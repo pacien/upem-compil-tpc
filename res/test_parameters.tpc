@@ -1,0 +1,17 @@
+/* test-table-symboles.tpc */
+
+/* Test file for simplified translator of a declaration of variables in C */
+
+entier test(entier a,entier b,entier c){
+	entier x;
+	entier y;
+	y = 1;
+	x = 21;
+	print(x+y);
+	return a*b+c;
+}
+
+entier main(void)  {
+	print(test(6,2,3));
+	return 0;
+}

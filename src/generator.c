@@ -90,13 +90,13 @@ void gen_const_declaration() {
   fun_display_table();
 }
 
-Type gen_function_declaration(const char name[], int return_type, int nb_param) {
-  fun_add(name, return_type, nb_param);
+Type gen_function_declaration(const char name[], int return_type) {
   fprintf(output, "\n%s:\npush rbp\nmov rbp,rsp\n", name);
   return return_type;
 }
 
-void gen_function_end_declaration() {
+void gen_function_end_declaration(const char name[], int return_type, int nb_param) {
+  fun_add(name, return_type, nb_param);
   fprintf(output, "mov rax,-1\nmov rsp, rbp\npop rbp\nret\n"); 
 }
 

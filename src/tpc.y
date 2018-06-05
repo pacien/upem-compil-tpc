@@ -23,6 +23,8 @@ static Type return_type = VOID_T;
 static int bss_done = 0;
 static int num_label = 0;
 static int num_if = 0;
+static int nb_param = 0;
+static char fname[64];
 %}
 
 %union {
@@ -88,14 +90,14 @@ DeclFoncts:
 ;
 DeclFonct:
   EnTeteFonct { scope = LOCAL; }
-  Corps       { gen_function_end_declaration(); scope = GLOBAL; return_type = VOID_T; }
+  Corps       { gen_function_end_declaration(fname,return_type,nb_param); scope = GLOBAL; return_type = VOID_T; }
 ;
 EnTeteFonct:
-  TYPE IDENT PrologueCont '(' Parametres ')' { return_type = gen_function_declaration($<ident>2, $<type>1, $5); }
-| VOID IDENT PrologueCont '(' Parametres ')' { return_type = gen_function_declaration($<ident>2, VOID_T, $5); }
+  TYPE IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, $<type>1);} '(' Parametres ')' { nb_param = $<num>6 ;  scope = GLOBAL;}
+| VOID IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, VOID_T);} '(' Parametres ')' { nb_param = $<num>6 ; scope = GLOBAL; }
 ;
 
-PrologueCont: {gen_prologue_continue(&bss_done);};
+PrologueCont: {scope = LOCAL;gen_prologue_continue(&bss_done);};
 
 Parametres:
   VOID {$$ = 0;}
@@ -106,7 +108,7 @@ ListTypVar:
 | TYPE IDENT                { gen_declaration($<ident>2, $<type>1, scope); $<num>$ = 1; }
 ;
 Corps:
-  '{' DeclConsts DeclVars SuiteInstr '}'
+  '{' {int i; for(i=1;i<=nb_param;i++){fprintf(output, "mov r8, [rbp + %d]\nmov [rbp - %d], r8\n", (nb_param-i+2)*8, i*8);}  } DeclConsts DeclVars SuiteInstr '}'
 ;
 SuiteInstr:
   SuiteInstr Instr
@@ -115,8 +117,8 @@ SuiteInstr:
 Instr:
   Exp ';'
 | ';'
-| RETURN Exp ';'                 { gen_function_return(return_type, $<type>2); scope = GLOBAL; return_type = VOID_T; }
-| RETURN ';'                     { gen_function_return(return_type, VOID_T); scope = GLOBAL; return_type = VOID_T; }
+| RETURN Exp ';'                 { gen_function_return(return_type, $<type>2); }
+| RETURN ';'                     { gen_function_return(return_type, VOID_T);}
 | READE '(' IDENT ')' ';'        { gen_reade($<ident>3); }
 | READC '(' IDENT ')' ';'        { gen_readc($<ident>3); }
 | PRINT '(' Exp ')' ';'          { gen_print($<type>3);}
@@ -166,8 +168,8 @@ F:
 | IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3); } 
 ;
 LValue:
-  IDENT                        { $$ = $1; gen_check($<ident>1, scope); }
-| IDENT '[' Exp ']'            { $$ = $1; gen_check($<ident>1, scope); }
+  IDENT                        { gen_check($<ident>1, scope); }
+| IDENT '[' Exp ']'            { gen_check($<ident>1, scope); }
 ;
 Arguments:
   ListExp
