@@ -225,7 +225,7 @@ void gen_if_end(int idx) {
 
 void gen_ifelse_end(int idx) {
   fprintf(output, ".end_ifelse%d:\n", idx);
-  fprintf(output, "ENDIF\n\n");
+  fprintf(output, ";ENDIF\n\n");
 }
 
 // ----- OPERATORS -----
