@@ -213,6 +213,6 @@ static char *string_of_type(int type) {
 void check_expected_type(int type_to_check, int type_expected) {
   if (type_to_check != type_expected)
     fprintf(stderr, "Expected type : %s -> Got type : %s (near line %d)\n",
-            string_of_type(type_to_check), string_of_type(type_to_check),
+            string_of_type(type_expected), string_of_type(type_to_check),
             lineno);
 }

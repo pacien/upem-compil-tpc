@@ -97,7 +97,7 @@ Type gen_function_declaration(const char name[], int return_type, int nb_param) 
 }
 
 void gen_function_end_declaration() {
-  fprintf(output, "mov rsp, rbp\npop rbp\nret\n"); 
+  fprintf(output, "mov rax,-1\nmov rsp, rbp\npop rbp\nret\n"); 
 }
 
 void gen_function_return(Type expect, Type actual) {
@@ -105,9 +105,8 @@ void gen_function_return(Type expect, Type actual) {
     fprintf(stderr, "Return type mismatch at line %d.", lineno);
     exit(1);
   }
-
   if (actual != VOID_T) fprintf(output, "pop rax\n");
-  gen_function_end_declaration();
+  fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
 }
 
 Type gen_function_call(const char name[], int nb_param) {
@@ -183,7 +182,7 @@ void gen_print(int type) {
     case CHAR:
       fprintf(output, "call printc\n");
     break;
-    default: fprintf(stderr, "Error print, supposed to have type CHAR or INT");
+    default: fprintf(stderr, "Error print, supposed to have type CHAR or INT\n");
   }
   
 }
