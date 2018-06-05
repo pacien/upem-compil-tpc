@@ -4,10 +4,10 @@
 entier r1,b,s,c,r2 ;
 caractere letter, digit, punct; 
 
+entier test(void){
+}
 
 entier main(void)  {
-	caractere r1;
-	readc(r1);
-	print(r1);
+	print(test());
 	return 0;
 }

@@ -97,7 +97,7 @@ Type gen_function_declaration(const char name[], int return_type, int nb_param) 
 }
 
 void gen_function_end_declaration() {
-  fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
+  fprintf(output, "mov rsp, rbp\npop rbp\nret\n"); 
 }
 
 void gen_function_return(Type expect, Type actual) {
