@@ -126,7 +126,7 @@ Instr:
 | PRINT '(' Exp ')' ';'          { gen_print($<type>3);}
 | IF '(' Exp IfHandling')' Instr { gen_if_label($<num>4); }
 | IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling
-| WHILE '(' Exp ')' Instr 
+| WHILE {fprintf(output,".upwhile%d:\n",num_while);}'(' Exp {fprintf(output,"pop rax\ncmp rax,0\njz .downwhile%d\n",num_while);}')' Instr {fprintf(output,"jmp .upwhile%d\n.downwhile%d:\n",num_while,num_while);num_while++;}
 | '{' SuiteInstr '}'
 ;
 IfHandling:                       { gen_if_start($<num>$ = num_if++); };

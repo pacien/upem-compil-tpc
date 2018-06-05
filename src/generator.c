@@ -282,7 +282,7 @@ void gen_or(int left, int right, int idx) {
   fprintf(output, "jmp .false%d\n", idx);
   fprintf(output, ".true%d:\n", idx);
   fprintf(output, "push 1\n");
-  fprintf(output, ".false%d:", idx);
+  fprintf(output, ".false%d:\n", idx);
 }
 
 void gen_and(int left, int right, int idx) {
@@ -300,7 +300,7 @@ void gen_and(int left, int right, int idx) {
   fprintf(output, "jmp .true%d\n", idx);
   fprintf(output, ".false%d:\n", idx);
   fprintf(output, "push 0\n");
-  fprintf(output, ".true%d:", idx);
+  fprintf(output, ".true%d:\n", idx);
 }
 
 void gen_eq(const char op[], int left, int right, int idx) {
@@ -316,7 +316,7 @@ void gen_eq(const char op[], int left, int right, int idx) {
   else
     exit(1); // TODO: error on unexpected op
 
-  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:", idx, idx,
+  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:\n", idx, idx,
           idx);
 }
 
@@ -337,7 +337,7 @@ void gen_order(const char op[], int left, int right, int idx) {
   else
     exit(1); // TODO: error on unexpected op
 
-  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:", idx, idx,
+  fprintf(output, "push 0\njmp .false%d\n.true%d:\npush 1\n.false%d:\n", idx, idx,
           idx);
 }
 
