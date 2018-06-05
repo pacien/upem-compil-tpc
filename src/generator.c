@@ -407,7 +407,7 @@ int gen_value(const char ident[], Scope scope) {
 
   case GLOBAL:
     if (is_read_only(ident, scope))
-      fprintf(output, "push QWORD %s\n", ident);
+      fprintf(output, "push QWORD [%s]\n", ident);
     else
       fprintf(output, "push QWORD [globals + %d] ;%s\n", glo_get_addr(ident), ident);
 
