@@ -20,6 +20,7 @@ extern int lineno;
 int yylex();
 void yyerror(char *);
 static Scope scope = GLOBAL;
+static Type return_type = VOID;
 static int bss_done = 0;
 static int num_label = 0;
 static int num_if = 0;
@@ -88,11 +89,11 @@ DeclFoncts:
 ;
 DeclFonct:
   EnTeteFonct { scope = LOCAL; }
-  Corps       { gen_function_end_declaration(); scope = GLOBAL; }
+  Corps       { gen_function_end_declaration(); scope = GLOBAL; return_type = VOID; }
 ;
 EnTeteFonct:
-  TYPE IDENT PrologueCont '(' Parametres ')' {gen_function_declaration($<ident>2, $<type>1, $5);}
-| VOID IDENT PrologueCont '(' Parametres ')' {gen_function_declaration($<ident>2, 2, $5);}
+  TYPE IDENT PrologueCont '(' Parametres ')' { return_type = gen_function_declaration($<ident>2, $<type>1, $5); }
+| VOID IDENT PrologueCont '(' Parametres ')' { return_type = gen_function_declaration($<ident>2, VOID, $5); }
 ;
 
 PrologueCont: {gen_prologue_continue(&bss_done);};
@@ -115,8 +116,8 @@ SuiteInstr:
 Instr:
   Exp ';'
 | ';'
-| RETURN Exp ';'
-| RETURN ';'
+| RETURN Exp ';'                 { gen_function_return(return_type, $<type>2); scope = GLOBAL; return_type = VOID; }
+| RETURN ';'                     { gen_function_return(return_type, VOID); scope = GLOBAL; return_type = VOID; }
 | READE '(' IDENT ')' ';'        { gen_reade($<ident>3); }
 | READC '(' IDENT ')' ';'        { gen_readc($<ident>3); }
 | PRINT '(' Exp ')' ';'          { gen_print($<type>3);}

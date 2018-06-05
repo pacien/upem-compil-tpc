@@ -91,14 +91,24 @@ void gen_const_declaration() {
   fun_display_table();
 }
 
-void gen_function_declaration(const char name[], int return_type,
-                              int nb_param) {
+Type gen_function_declaration(const char name[], int return_type, int nb_param) {
   fun_add(name, return_type, nb_param);
   fprintf(output, "\n%s:\npush rbp\nmov rbp,rsp\n", name);
+  return return_type;
 }
 
 void gen_function_end_declaration() {
   fprintf(output, "mov rsp, rbp\npop rbp\nret\n");
+}
+
+void gen_function_return(Type expect, Type actual) {
+  if (actual != expect) {
+    fprintf(stderr, "Return type mismatch at line %d.", lineno);
+    exit(1);
+  }
+
+  if (actual != VOID) fprintf(output, "pop rax\n");
+  gen_function_end_declaration();
 }
 
 int gen_function_call(const char name[], int nb_param) {
