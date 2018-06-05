@@ -115,3 +115,7 @@ L'analyse statique des branchements étant un problème relativement complexe, i
 
 Nous pourrions envisager de parser entièrement le fichier et de ne pas s'arrêter dès la première erreur de syntaxe comme le fait `gcc`.
 Il est possible de réaliser ceci en modifiant le code de `yyerror()` par exemple.
+
+## Suppression du code partiellement généré
+
+Une erreur de compilation entraîne l'arrêt de la génération de code, pouvant laisser un fichier de sortie partiellement généré. Il serait préférable de le supprimer en cas d'erreur.
