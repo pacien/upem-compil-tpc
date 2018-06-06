@@ -265,7 +265,7 @@ void gen_ifelse_end(int idx) {
 
 // ----- OPERATORS -----
 
-int gen_assign(const char ident[], Scope scope) {
+static int gen_assign_simple(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
 
@@ -291,7 +291,7 @@ int gen_assign(const char ident[], Scope scope) {
   }
 }
 
-int gen_assign_tab(const char ident[], Scope scope) {
+static int gen_assign_tab(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
 
@@ -314,6 +314,13 @@ int gen_assign_tab(const char ident[], Scope scope) {
     }
   default:
     exit(1);
+  }
+}
+
+int gen_assign(const char ident[], Scope scope) {
+  switch (loc_lookup(ident)) {
+  case TAB: return gen_assign_tab(ident, scope);
+  default: return gen_assign_simple(ident, scope);
   }
 }
 
@@ -447,7 +454,7 @@ int gen_negate_expr(int type) {
   return type;
 }
 
-int gen_value(const char ident[], Scope scope) {
+static int gen_value_simple(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
 
   switch (scope) {
@@ -470,7 +477,8 @@ int gen_value(const char ident[], Scope scope) {
     exit(1);
   }
 }
-int gen_value_tab(const char ident[], Scope scope) {
+
+static int gen_value_tab(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
   switch (scope) {
@@ -489,6 +497,14 @@ int gen_value_tab(const char ident[], Scope scope) {
     exit(1);
   }
 }
+
+int gen_value(const char ident[], Scope scope) {
+  switch (loc_lookup(ident)) {
+  case TAB: return gen_value_tab(ident, scope);
+  default: return gen_value_simple(ident, scope);
+  }
+}
+
 int gen_num(int value, Scope scope) {
   fprintf(output, "push %d\n", value);
   return INT;

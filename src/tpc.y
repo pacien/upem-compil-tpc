@@ -2,11 +2,6 @@
 /*
  * UPEM / Compilation / Projet
  * Pacien TRAN-GIRARD, Adam NAILI
- *
- *	TODO :
- *  ------
- * - arrays
- *
  */
 
 int nb_globals = 0;
@@ -147,13 +142,7 @@ IfHandling:                       { gen_if_start($<num>$ = num_if++); };
 IfEndHandling:                    { gen_if_end($<num>-3); };
 IfElseEndHandling:                { gen_ifelse_end($<num>-5); };
 Exp:
-  LValue '=' Exp                { 
-                                  if(loc_lookup($<ident>1) != TAB){
-                                  $$ = gen_assign($<ident>1, scope);
-                                  }else{
-                                    $$ = gen_assign_tab($<ident>1,scope);
-                                  }
-                                }
+  LValue '=' Exp                { $$ = gen_assign($<ident>1, scope); }
 | EB
 ;
 EB:
@@ -184,12 +173,7 @@ F:
   ADDSUB F                      { $$ = gen_signed_expr($1, $2); }
 | '!' F                         { $$ = gen_negate_expr($2); }
 | '(' Exp ')'                   { $$ = $2; }
-| LValue                        { if(loc_lookup($<ident>1) != TAB){
-                                    $$ = gen_value($<ident>1, scope);
-                                  }else{
-                                    $$ = gen_value_tab($<ident>1,scope);
-                                  }
-                                }
+| LValue                        { $$ = gen_value($<ident>1, scope); }
 | NUM                           { $$ = gen_num($1, scope); }
 | CARACTERE                     { $$ = gen_char($1, scope); }
 | IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3); } 

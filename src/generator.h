@@ -39,7 +39,6 @@ void gen_if_end(int idx);
 void gen_ifelse_end(int idx);
 
 int gen_assign(const char ident[], Scope scope);
-int gen_assign_tab(const char ident[], Scope scope);
 
 void gen_or(int left, int right, int idx);
 void gen_and(int left, int right, int idx);
@@ -51,7 +50,6 @@ void gen_divstar(char op, int left, int right);
 int gen_signed_expr(char op, int type);
 int gen_negate_expr(int type);
 int gen_value(const char ident[], Scope scope);
-int gen_value_tab(const char ident[], Scope scope);
 
 int gen_num(int value, Scope scope);
 int gen_char(int value, Scope scope);
