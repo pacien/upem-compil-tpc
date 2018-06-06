@@ -58,7 +58,7 @@ static char fname[64];
 
 %%
 Prog:                               { gen_prologue(); }
-  DeclConsts DeclVars DeclFoncts    { gen_const_declaration(); }
+  DeclConsts DeclVars DeclFoncts    { gen_epilogue(); }
 ;
 DeclConsts:
   DeclConsts CONST ListConst ';'

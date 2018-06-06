@@ -1,0 +1,6 @@
+const c = 0;
+
+/* not a main */
+void f(void) {
+  print(c);
+}
