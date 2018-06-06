@@ -7,11 +7,26 @@ date: 2018-02-20
 # Usage
 Après un `make`, `./tcompil < prog.tpc [-o prog.asm]`
 	
-Pour faciliter les tests,
-`make test FILE_TEST=test_file`
+Pour faciliter les tests, utiliser `make test FILE_TEST=test_file`
 test_file est en réalité un fichier d'extension .tpc placé dans le répertoire res. (exemple: res/test_file.tpc).
 Ceci génère un executable `test_file` dans le répertoire out.
 
+# Fonctions fournies par le langage
+
+## Fonctions de lecture
+
+- `reade(entier e)`
+
+	Fonction de lecture sur l'entrée standard de valeur de type `entier`. On passe en paramètre un `entier` a l'adresse duquel sera stocké l'entier lu.
+
+- `readc(caractere c)`
+
+	Fonction de lecture sur l'entrée standard de valeur de type `caractere`. On passe en paramètre un `caractere` a l'adresse duquel sera stocké le caractere lu.
+
+## Fonction d'écriture
+- `print(<entier|caractere> exp)`
+
+	Fonction d'écriture sur la sortie standard qui se charge d'identifier le type de l'expression passée en paramètre.
 
 # Analyse lexicale
 
@@ -87,7 +102,7 @@ ListExp	: ListExp ',' Exp
 
 Par exemple :
 
-```
+```yacc
 ListExp ',' ListExp ',' ListExp
 ```
 
@@ -100,7 +115,7 @@ On déclare donc `%left ,` pour l'indiquer à Bison.
 
 Le compilateur gère l'analyse sémantique.
 Par exemple l'opération `tab[1] * 3` est légale mais `'a' * 'b'` ne l'est pas. La grammaire l'accepte, mais l'analyse sémantique à parti des attributs interdits.
-
+De la même manière des caractères ne peuvent pas être des booléens.
 
 
 # Génération de code cible
@@ -135,3 +150,4 @@ Il est possible de réaliser ceci en modifiant le code de `yyerror()` par exempl
 ## Suppression du code partiellement généré
 
 Une erreur de compilation entraîne l'arrêt de la génération de code, pouvant laisser un fichier de sortie partiellement généré. Il serait préférable de le supprimer en cas d'erreur.
+Cette gestion s'appuierait sur `yyerror()` et le retour de la fonction `yyparse()`. Lorsque le code de retour du compilateur est identifiable à une erreur, on supprimerait le .asm généré afin de ne pas fournir à l'utilisateur un programme assembleur frelaté. 
