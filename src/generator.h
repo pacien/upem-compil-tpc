@@ -16,7 +16,7 @@ FILE *output;
 
 void gen_prologue();
 void gen_prologue_continue(int *bss_done);
-void gen_const_declaration();
+void gen_epilogue();
 void gen_const(const char name[], int value, Scope scope);
 
 Type gen_function_declaration(const char name[], int return_type);

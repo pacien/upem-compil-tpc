@@ -78,7 +78,7 @@ void gen_prologue_continue(int *bss_done) {
   *bss_done = 1;
 }
 
-void gen_const_declaration() {
+void gen_epilogue() {
   fprintf(output, "\n_start:\n");
   fprintf(output, "push rbp\nmov rbp, rsp\n\n");
   fprintf(output, "call main\n");
@@ -91,6 +91,9 @@ void gen_const_declaration() {
   loc_display_table();
   fprintf(output, ";function table\n");
   fun_display_table();
+
+  // require a main function
+  fun_lookup("main", 0);
 }
 
 void gen_const(const char name[], int value, Scope scope) {
