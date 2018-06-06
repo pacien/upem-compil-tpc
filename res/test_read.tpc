@@ -1,6 +1,3 @@
-/* test-table-symboles.tpc */
-
-/* Test file for simplified translator of a declaration of variables in C */
 entier r1,b,s,c,r2 ;
 caractere letter, digit, punct; 
 
