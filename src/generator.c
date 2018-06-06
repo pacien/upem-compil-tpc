@@ -13,7 +13,7 @@ void gen_prologue() {
 }
 
 void gen_prologue_continue(bool *bss_done) {
-  if (!*bss_done) return;
+  if (*bss_done) return;
 
   fprintf(output, "format_int db \"%%d\",10,0\n");
   fprintf(output, "format_char db \"%%c\",10,0\n");

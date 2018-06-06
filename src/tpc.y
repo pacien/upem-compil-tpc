@@ -181,8 +181,8 @@ F:
 | IDENT '(' Arguments  ')'          { $$ = gen_function_call($<ident>1, $<num>3); } 
 ;
 LValue:
-  IDENT                             { gen_check($<ident>1, scope); strcpy($$, $1);}
-| IDENT '[' Exp ']'                 { gen_check($<ident>1, scope); strcpy($$, $1);}
+  IDENT                             { gen_check($<ident>1, scope); strcpy($$, $1); }
+| IDENT '[' Exp ']'                 { gen_check($<ident>1, scope); strcpy($$, $1); }
 ;
 Arguments:
   ListExp
