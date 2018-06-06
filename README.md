@@ -7,6 +7,7 @@ Compilateur TPC (Très Petit C).
 
 * Compiler le compilateur : `make all`
 * Générer le rapport PDF : `make out/rapport.pdf` (requiert `pandoc`)
+* Exécuter un test : `make test FILE_TEST=some_test_ok && out/some_test_ok`
 
 
 ## Dépendances
