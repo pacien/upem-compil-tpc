@@ -15,23 +15,23 @@ extern int lineno;
 FILE *output;
 
 void gen_prologue();
-void gen_prologue_continue(int *bss_done);
+void gen_prologue_continue(bool *bss_done);
 void gen_epilogue();
 void gen_const(const char name[], int value, Scope scope);
 
 Type gen_function_declaration(const char name[], int return_type);
 void gen_tab_declaration(const char name[], Scope scope, int size);
-void gen_function_end_declaration(const char name[], int return_type, int nb_param);
+void gen_function_end_declaration(const char name[], Type return_type, int nb_param);
 void gen_function_return(Type expect, Type actual);
 Type gen_function_call(const char name[], int nb_param);
 
-void gen_declaration(const char name[], int type, Scope scope);
+void gen_declaration(const char name[], Type type, Scope scope);
 void gen_check(const char name[], Scope scope);
 
 void gen_reade(const char name[], Scope scope);
 void gen_readc(const char name[], Scope scope);
 
-void gen_print(int type);
+void gen_print(Type type);
 
 void gen_if_label(int idx);
 void gen_if_start(int idx);
@@ -47,8 +47,8 @@ void gen_order(const char op[], int left, int right, int idx);
 void gen_addsub(char op, int left, int right);
 void gen_divstar(char op, int left, int right);
 
-int gen_signed_expr(char op, int type);
-int gen_negate_expr(int type);
+int gen_signed_expr(char op, Type type);
+int gen_negate_expr(Type type);
 int gen_value(const char ident[], Scope scope);
 
 int gen_num(int value, Scope scope);
