@@ -6,9 +6,9 @@ entier i;
 void calcul(void) {
   r1=12;
   r2=13;
-  s = 3;
+  i = 3;
 
-  b = r1 + r2 + s;
+  b = r1 + r2 + i;
   print(b);
 }
 
