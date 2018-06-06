@@ -38,6 +38,10 @@ void gen_if_start(int idx);
 void gen_if_end(int idx);
 void gen_ifelse_end(int idx);
 
+void gen_while_start(int id);
+void gen_while_cond(int id);
+void gen_while_end(int id);
+
 int gen_assign(const char ident[], Scope scope);
 
 void gen_or(int left, int right, int idx);

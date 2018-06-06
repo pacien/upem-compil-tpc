@@ -74,7 +74,7 @@ void gen_prologue_continue(bool *bss_done) {
   fprintf(output, "pop rsi\n");
   fprintf(output, "pop rbp\n");
   fprintf(output, "ret\n");
-  *bss_done = 1;
+  *bss_done = true;
 }
 
 void gen_epilogue() {
@@ -522,4 +522,16 @@ int gen_num(int value, Scope scope) {
 int gen_char(int value, Scope scope) {
   fprintf(output, "push %d\n", value);
   return CHAR;
+}
+
+void gen_while_start(int id) {
+  fprintf(output,".upwhile%d:\n", id);
+}
+
+void gen_while_cond(int id) {
+  fprintf(output,"pop rax\ncmp rax,0\njz .downwhile%d\n", id);
+}
+
+void gen_while_end(int id) {
+  fprintf(output,"jmp .upwhile%d\n.downwhile%d:\n", id, id); 
 }
