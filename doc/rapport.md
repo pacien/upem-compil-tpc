@@ -126,14 +126,20 @@ Pour des raisons de simplicité, il a été choisi de travailler principalement 
 
 ## Fonctions
 
-## Passage de paramètres
+### Fonction principale
+
+Le programme doit être doté d'une fonction `void main(void)` qui sera le point d'entrée du programme.
+La forme alternative `entier main(void)` est aussi acceptée par convention. La valeur retournée est ignorée et l'exécutable renverra toujours `0`.
+
+
+### Passage de paramètres
 
 Il a été choisi d'effectuer le passage des paramamètres simples (de types `entier` et `caractere`) par copie pour des raisons de simplicité et de sécurité, pour permettre une certaine isolation des contextes lors de l'entrée dans une fonction.
 
 Tous les paramètres sont implicitement convertis en type `entier`, la vérification du typage des paramètres s'avérant difficile. De plus, il n'est pas possible de passer un tableau en paramètre par référence.
 
 
-## Retour de valeur
+### Retour de valeur
 
 Les fonction valuées retournent leur valeur en suivant les conventions d'appel des fonctions C, c'est-à-dire en la plaçant dans le registre `rax`. L'appelant récupère ensuite cette valeur pour pouvoir la stocker dans la pile.
 
