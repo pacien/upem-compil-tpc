@@ -1,0 +1,6 @@
+entier main(void)  {
+	entier r1;
+	reade(r1);
+  print(r1);
+	return 0;
+}
