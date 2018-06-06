@@ -96,6 +96,13 @@ Dans les langages tel que le C, l'associativité se fait à gauche.
 On déclare donc `%left ,` pour l'indiquer à Bison.
 
 
+# Analyse sémantique
+
+Le compilateur gère l'analyse sémantique.
+Par exemple l'opération `tab[1] * 3` est légale mais `'a' * 'b'` ne l'est pas. La grammaire l'accepte, mais l'analyse sémantique à parti des attributs interdits.
+
+
+
 # Génération de code cible
 
 ## Gestion de la mémoire
