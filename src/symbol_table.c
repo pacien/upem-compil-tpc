@@ -7,6 +7,7 @@
 #include "generator.h"
 
 extern int lineno; /* from lexical analyser */
+void yyerror(char *);
 
 SymbolTable glo_symbol_table = {{{{0}, 0}}, MAXSYMBOLS, 0};
 SymbolTable loc_symbol_table = {{{{0}, 0}}, MAXSYMBOLS, 0};
@@ -57,12 +58,14 @@ int fun_lookup(const char name[], int nb_param) {
   int count;
 
   for (count = 0; count < fun_table.size; count++) {
-    if (!strcmp(fun_table.entries[count].name, name) && (fun_table.entries[count].nb_parameters == nb_param)) {
+    if (!strcmp(fun_table.entries[count].name, name) &&
+        (fun_table.entries[count].nb_parameters == nb_param)) {
       return fun_table.entries[count].return_type;
     }
   }
-  fprintf(stderr, "No definition of the function %s (or wrong number of parameters) near line %d\n", name,
-          lineno);
+  fprintf(stderr, "No definition of the function %s (or wrong number of "
+                  "parameters) near line %d\n",
+          name, lineno);
   return -1;
 }
 
@@ -82,17 +85,14 @@ static void glo_add(const char name[], int type, bool read_only) {
   }
   strcpy(glo_symbol_table.entries[glo_symbol_table.size - 1].name, name);
   glo_symbol_table.entries[glo_symbol_table.size - 1].type = type;
-  glo_symbol_table.entries[glo_symbol_table.size - 1].addr = (glo_symbol_table.size - 1) * 8;
+  glo_symbol_table.entries[glo_symbol_table.size - 1].addr =
+      (glo_symbol_table.size - 1) * 8;
   glo_symbol_table.entries[glo_symbol_table.size - 1].read_only = read_only;
 }
 
-void glo_addVar(const char name[], int type) {
-  glo_add(name, type, false);
-}
+void glo_addVar(const char name[], int type) { glo_add(name, type, false); }
 
-void glo_addConst(const char name[]) {
-  glo_add(name, INT, true);
-}
+void glo_addConst(const char name[]) { glo_add(name, INT, true); }
 
 // Verifies that the variable exists and returns the type
 int glo_lookup(const char name[]) {
@@ -149,17 +149,14 @@ static void loc_add(const char name[], int type, bool read_only) {
   }
   strcpy(loc_symbol_table.entries[loc_symbol_table.size - 1].name, name);
   loc_symbol_table.entries[loc_symbol_table.size - 1].type = type;
-  loc_symbol_table.entries[loc_symbol_table.size - 1].addr = (loc_symbol_table.size - 1) * 8 + 8;
+  loc_symbol_table.entries[loc_symbol_table.size - 1].addr =
+      (loc_symbol_table.size - 1) * 8 + 8;
   loc_symbol_table.entries[loc_symbol_table.size - 1].read_only = read_only;
 }
 
-void loc_addVar(const char name[], int type) {
-  loc_add(name, type, false);
-}
+void loc_addVar(const char name[], int type) { loc_add(name, type, false); }
 
-void loc_addConst(const char name[]) {
-  loc_add(name, INT, true);
-}
+void loc_addConst(const char name[]) { loc_add(name, INT, true); }
 
 int loc_lookup(const char name[]) {
   int count;
@@ -205,9 +202,7 @@ void loc_display_table() {
   fprintf(output, "\n");
 }
 
-void loc_clean_table() {
-  loc_symbol_table.size = 0;
-}
+void loc_clean_table() { loc_symbol_table.size = 0; }
 
 static char *string_of_type(int type) {
   switch (type) {
@@ -230,11 +225,12 @@ void check_expected_type(Type type_to_check, Type type_expected) {
             string_of_type(type_expected), string_of_type(type_to_check),
             lineno);
 }
-void check_expected_types(Type type_to_check, Type type_expected1, Type type_expected2) {
+void check_expected_types(Type type_to_check, Type type_expected1,
+                          Type type_expected2) {
   if (type_to_check != type_expected1 && type_to_check != type_expected2)
     fprintf(stderr, "Expected type : %s OR %s-> Got type : %s (near line %d)\n",
-            string_of_type(type_expected1), string_of_type(type_expected2), string_of_type(type_to_check),
-            lineno);
+            string_of_type(type_expected1), string_of_type(type_expected2),
+            string_of_type(type_to_check), lineno);
 }
 
 /* returns false if symbol can't be found too */
