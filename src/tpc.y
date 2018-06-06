@@ -27,6 +27,7 @@ static int num_while = 0;
 static int nb_param[255];
 static int num_scope = -1;
 static char fname[64];
+static Type type;
 %}
 
 %union {
@@ -75,15 +76,15 @@ NombreSigne:
 | ADDSUB NUM                        { $<num>$ = $<addsub>1 == '-' ? - $<num>2 : $<num>2; }
 ;
 DeclVars:
-  DeclVars TYPE Declarateurs ';'
+  DeclVars TYPE Declarateurs ';'    {type = $<type>2;}
 |
 ;
 Declarateurs:
-  Declarateurs ',' Declarateur      
-| Declarateur                       
+  Declarateurs ',' Declarateur
+| Declarateur                     
 ;
 Declarateur:
-  IDENT                             { gen_declaration($<ident>1, $<type>0, scope);}
+  IDENT                             { gen_declaration($<ident>1, type, scope);}
 | IDENT '[' NUM ']'                 { gen_tab_declaration($<ident>1, scope, $<num>3);}
 ;
 DeclFoncts:
