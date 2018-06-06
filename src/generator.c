@@ -137,6 +137,13 @@ Type gen_function_call(const char name[], int nb_param) {
   return return_type;
 }
 
+void gen_function_param_passing(int nb_params) {
+  for(int i = 1; i <= nb_params; i++) {
+    fprintf(output, "mov r8, [rbp + %d]\n", (nb_params - i + 2) * 8);
+    fprintf(output, "mov [rbp - %d], r8\n", i * 8);
+  }
+}
+
 void gen_declaration(const char name[], Type type, Scope scope) {
   switch (scope) {
   case GLOBAL:

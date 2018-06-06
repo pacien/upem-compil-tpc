@@ -114,10 +114,7 @@ ListTypVar:
 | TYPE IDENT                        { gen_declaration($<ident>2, $<type>1, scope); $<num>$ = 1; }
 ;
 Corps:
-  '{'                               { int i;
-                                      for(i=1;i<=nb_param[num_scope];i++){
-                                        fprintf(output, "mov r8, [rbp + %d]\nmov [rbp - %d], r8\n", (nb_param[num_scope]-i+2)*8, i*8);
-                                      } }
+  '{'                               { gen_function_param_passing(nb_param[num_scope]); }
   DeclConsts DeclVars SuiteInstr '}'
 ;
 SuiteInstr:
