@@ -26,8 +26,9 @@ static int num_if = 0;
 static int num_while = 0;
 static int nb_param[255];
 static int num_scope = -1;
+static int offset = 0;
+static int is_array = 0;
 static char fname[64];
-static Type type;
 %}
 
 %union {
@@ -49,7 +50,7 @@ static Type type;
 %token <type> TYPE
 
 %type <num> Exp EB TB FB M E T F Parametres
-%type <ident> LValue
+%type <ident> LValue Declarateur
 
 %left ','
 %precedence ')'
@@ -76,16 +77,28 @@ NombreSigne:
 | ADDSUB NUM                        { $<num>$ = $<addsub>1 == '-' ? - $<num>2 : $<num>2; }
 ;
 DeclVars:
-  DeclVars TYPE Declarateurs ';'    {type = $<type>2;}
+  DeclVars TYPE Declarateurs ';'    
 |
 ;
 Declarateurs:
-  Declarateurs ',' Declarateur
-| Declarateur                     
+  Declarateurs ',' Declarateur      {
+                                      if(!is_array){
+                                        gen_declaration($<ident>3, $<type>0, scope);
+                                      }else{
+                                        gen_tab_declaration($<ident>3, scope, offset);
+                                      }
+                                    }
+| Declarateur                       { 
+                                      if(!is_array){
+                                        gen_declaration($<ident>1, $<type>0, scope);
+                                      }else{
+                                        gen_tab_declaration($<ident>1, scope, offset);
+                                      }
+                                    }               
 ;
 Declarateur:
-  IDENT                             { gen_declaration($<ident>1, type, scope);}
-| IDENT '[' NUM ']'                 { gen_tab_declaration($<ident>1, scope, $<num>3);}
+  IDENT                             {strcpy($$,$1);is_array = 0;}               
+| IDENT '[' NUM ']'                 {offset = $<num>3;strcpy($$,$1);is_array=1;}               
 ;
 DeclFoncts:
    DeclFoncts DeclFonct
@@ -182,8 +195,8 @@ F:
 | IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3); } 
 ;
 LValue:
-  IDENT                        { gen_check($<ident>1, scope); }
-| IDENT '[' Exp ']'            { gen_check($<ident>1, scope); }
+  IDENT                        { gen_check($<ident>1, scope); strcpy($$, $1);}
+| IDENT '[' Exp ']'            { gen_check($<ident>1, scope); strcpy($$, $1);}
 ;
 Arguments:
   ListExp

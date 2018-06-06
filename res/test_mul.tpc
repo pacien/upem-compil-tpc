@@ -1,12 +1,13 @@
-/* test-table-symboles.tpc */
-
-/* Test file for simplified translator of a declaration of variables in C */
 entier a;
 
 entier main(void)  {
 	entier a,b,res;
 	a = 2;
 	b = 3;
+	res = a * b;
+	print(res);
+	res = a / b;
+	print(res);
 	res = a % b;
 	print(res);
 }
