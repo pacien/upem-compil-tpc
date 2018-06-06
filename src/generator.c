@@ -12,9 +12,8 @@ void gen_prologue() {
   fprintf(output, "section .data\n");
 }
 
-void gen_prologue_continue(int *bss_done) {
-  if (*bss_done != 0)
-    return;
+void gen_prologue_continue(bool *bss_done) {
+  if (!*bss_done) return;
 
   fprintf(output, "format_int db \"%%d\",10,0\n");
   fprintf(output, "format_char db \"%%c\",10,0\n");
@@ -115,8 +114,7 @@ Type gen_function_declaration(const char name[], int return_type) {
   return return_type;
 }
 
-void gen_function_end_declaration(const char name[], int return_type,
-                                  int nb_param) {
+void gen_function_end_declaration(const char name[], Type return_type, int nb_param) {
   fun_add(name, return_type, nb_param);
   fprintf(output, "mov rax,-1\nmov rsp, rbp\npop rbp\nret\n");
 }
@@ -139,7 +137,7 @@ Type gen_function_call(const char name[], int nb_param) {
   return return_type;
 }
 
-void gen_declaration(const char name[], int type, Scope scope) {
+void gen_declaration(const char name[], Type type, Scope scope) {
   switch (scope) {
   case GLOBAL:
     glo_addVar(name, type);
@@ -220,7 +218,7 @@ void gen_readc(const char name[], Scope scope) {
   fprintf(output, "mov rax,globals\nadd rax,%d\ncall readc\n", g_addr);
 }
 
-void gen_print(int type) {
+void gen_print(Type type) {
   // check if the name exists in both tables
   fprintf(output, "pop rax\n");
   switch (type) {
@@ -264,7 +262,7 @@ void gen_ifelse_end(int idx) {
 
 // ----- OPERATORS -----
 
-int gen_assign(const char ident[], Scope scope) {
+static int gen_assign_simple(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
 
@@ -290,7 +288,7 @@ int gen_assign(const char ident[], Scope scope) {
   }
 }
 
-int gen_assign_tab(const char ident[], Scope scope) {
+static int gen_assign_tab(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
 
@@ -319,6 +317,13 @@ int gen_assign_tab(const char ident[], Scope scope) {
     }
   default:
     exit(1);
+  }
+}
+
+int gen_assign(const char ident[], Scope scope) {
+  switch (loc_lookup(ident)) {
+  case TAB: return gen_assign_tab(ident, scope);
+  default: return gen_assign_simple(ident, scope);
   }
 }
 
@@ -430,7 +435,7 @@ void gen_divstar(char op, int left, int right) {
   }
 }
 
-int gen_signed_expr(char op, int type) {
+int gen_signed_expr(char op, Type type) {
   check_expected_types(type, INT, TAB);
   switch (op) {
   case '+':
@@ -446,13 +451,13 @@ int gen_signed_expr(char op, int type) {
   return type;
 }
 
-int gen_negate_expr(int type) {
+int gen_negate_expr(Type type) {
   check_expected_types(type, INT, TAB);
   fprintf(output, ";!F\npop rax\nxor rax,1\npush rax\n");
   return type;
 }
 
-int gen_value(const char ident[], Scope scope) {
+static int gen_value_simple(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
 
   switch (scope) {
@@ -475,7 +480,8 @@ int gen_value(const char ident[], Scope scope) {
     exit(1);
   }
 }
-int gen_value_tab(const char ident[], Scope scope) {
+
+static int gen_value_tab(const char ident[], Scope scope) {
   int l_addr = loc_get_addr(ident);
   int g_addr = glo_get_addr(ident);
   switch (scope) {
@@ -500,6 +506,14 @@ int gen_value_tab(const char ident[], Scope scope) {
     exit(1);
   }
 }
+
+int gen_value(const char ident[], Scope scope) {
+  switch (loc_lookup(ident)) {
+  case TAB: return gen_value_tab(ident, scope);
+  default: return gen_value_simple(ident, scope);
+  }
+}
+
 int gen_num(int value, Scope scope) {
   fprintf(output, "push %d\n", value);
   return INT;

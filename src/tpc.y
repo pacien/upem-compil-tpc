@@ -2,11 +2,6 @@
 /*
  * UPEM / Compilation / Projet
  * Pacien TRAN-GIRARD, Adam NAILI
- *
- *	TODO :
- *  ------
- * - arrays
- *
  */
 
 int nb_globals = 0;
@@ -20,14 +15,14 @@ int yylex();
 void yyerror(char *);
 static Scope scope = GLOBAL;
 static Type return_type = VOID_T;
-static int bss_done = 0;
+static bool bss_done = false;
 static int num_label = 0;
 static int num_if = 0;
 static int num_while = 0;
 static int nb_param[255];
 static int num_scope = -1;
 static int offset = 0;
-static int is_array = 0;
+static bool is_array = false;
 static char fname[64];
 %}
 
@@ -81,50 +76,49 @@ DeclVars:
 |
 ;
 Declarateurs:
-  Declarateurs ',' Declarateur      {
-                                      if(!is_array){
-                                        gen_declaration($<ident>3, $<type>0, scope);
-                                      }else{
-                                        gen_tab_declaration($<ident>3, scope, offset);
-                                      }
-                                    }
-| Declarateur                       { 
-                                      if(!is_array){
-                                        gen_declaration($<ident>1, $<type>0, scope);
-                                      }else{
-                                        gen_tab_declaration($<ident>1, scope, offset);
-                                      }
-                                    }               
+  Declarateurs ',' Declarateur      { if (is_array) gen_tab_declaration($<ident>3, scope, offset);
+                                      else gen_declaration($<ident>3, $<type>0, scope); }
+| Declarateur                       { if (is_array) gen_tab_declaration($<ident>1, scope, offset);
+                                      else gen_declaration($<ident>1, $<type>0, scope); }
 ;
 Declarateur:
-  IDENT                             {strcpy($$,$1);is_array = 0;}               
-| IDENT '[' NUM ']'                 {offset = $<num>3;strcpy($$,$1);is_array=1;}               
+  IDENT                             { strcpy($$, $1); is_array = false; }
+| IDENT '[' NUM ']'                 { offset = $<num>3; strcpy($$, $1); is_array = true; }               
 ;
 DeclFoncts:
    DeclFoncts DeclFonct
 |  DeclFonct
 ;
 DeclFonct:
-  EnTeteFonct { scope = LOCAL; }
-  Corps       { gen_function_end_declaration(fname,return_type,nb_param[num_scope]); scope = GLOBAL; return_type = VOID_T; num_scope--; loc_clean_table(); }
+  EnTeteFonct                       { scope = LOCAL; }
+  Corps                             { gen_function_end_declaration(fname, return_type, nb_param[num_scope]);
+                                      scope = GLOBAL; return_type = VOID_T; num_scope--; loc_clean_table(); }
 ;
 EnTeteFonct:
-  TYPE IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, $<type>1);} '(' Parametres ')' { nb_param[++num_scope] = $<num>6 ;  scope = GLOBAL;}
-| VOID IDENT PrologueCont {strcpy(fname,$<ident>2); return_type = gen_function_declaration($<ident>2, VOID_T);} '(' Parametres ')' { nb_param[++num_scope] = $<num>6 ; scope = GLOBAL; }
+  TYPE IDENT PrologueCont           { strcpy(fname, $<ident>2);
+                                      return_type = gen_function_declaration($<ident>2, $<type>1); }
+  '(' Parametres ')'                { nb_param[++num_scope] = $<num>6; scope = GLOBAL;}
+| VOID IDENT PrologueCont           { strcpy(fname, $<ident>2);
+                                      return_type = gen_function_declaration($<ident>2, VOID_T); }
+  '(' Parametres ')'                { nb_param[++num_scope] = $<num>6; scope = GLOBAL; }
 ;
 
-PrologueCont: {scope = LOCAL;gen_prologue_continue(&bss_done);};
+PrologueCont:                       { scope = LOCAL; gen_prologue_continue(&bss_done); };
 
 Parametres:
-  VOID {$$ = 0;}
-| ListTypVar { $<num>$ = $<num>1;}
+  VOID                              { $$ = 0; }
+| ListTypVar                        { $<num>$ = $<num>1; }
 ;
 ListTypVar:
-  ListTypVar ',' TYPE IDENT { gen_declaration($<ident>4, $<type>3, scope); $<num>$ = $<num>1+1;  }
-| TYPE IDENT                { gen_declaration($<ident>2, $<type>1, scope); $<num>$ = 1; }
+  ListTypVar ',' TYPE IDENT         { gen_declaration($<ident>4, $<type>3, scope); $<num>$ = $<num>1+1;  }
+| TYPE IDENT                        { gen_declaration($<ident>2, $<type>1, scope); $<num>$ = 1; }
 ;
 Corps:
-  '{' {int i; for(i=1;i<=nb_param[num_scope];i++){fprintf(output, "mov r8, [rbp + %d]\nmov [rbp - %d], r8\n", (nb_param[num_scope]-i+2)*8, i*8);} } DeclConsts DeclVars SuiteInstr '}'
+  '{'                               { int i;
+                                      for(i=1;i<=nb_param[num_scope];i++){
+                                        fprintf(output, "mov r8, [rbp + %d]\nmov [rbp - %d], r8\n", (nb_param[num_scope]-i+2)*8, i*8);
+                                      } }
+  DeclConsts DeclVars SuiteInstr '}'
 ;
 SuiteInstr:
   SuiteInstr Instr
@@ -133,78 +127,70 @@ SuiteInstr:
 Instr:
   Exp ';'
 | ';'
-| RETURN Exp ';'                 { gen_function_return(return_type, $<type>2); }
-| RETURN ';'                     { gen_function_return(return_type, VOID_T);}
-| READE '(' IDENT ')' ';'        { gen_reade($<ident>3, scope); }
-| READC '(' IDENT ')' ';'        { gen_readc($<ident>3, scope); }
-| PRINT '(' Exp ')' ';'          { gen_print($<type>3);}
-| IF '(' Exp IfHandling')' Instr { gen_if_label($<num>4); }
-| IF '(' Exp IfHandling')' Instr ELSE IfEndHandling Instr IfElseEndHandling
-| WHILE {fprintf(output,".upwhile%d:\n",num_while);}'(' Exp {fprintf(output,"pop rax\ncmp rax,0\njz .downwhile%d\n",num_while);}')' Instr {fprintf(output,"jmp .upwhile%d\n.downwhile%d:\n",num_while,num_while);num_while++;}
+| RETURN Exp ';'                    { gen_function_return(return_type, $<type>2); }
+| RETURN ';'                        { gen_function_return(return_type, VOID_T); }
+| READE '(' IDENT ')' ';'           { gen_reade($<ident>3, scope); }
+| READC '(' IDENT ')' ';'           { gen_readc($<ident>3, scope); }
+| PRINT '(' Exp ')' ';'             { gen_print($<type>3);}
+| IF '(' Exp IfHandling')' Instr    { gen_if_label($<num>4); }
+| IF '(' Exp IfHandling')' Instr
+  ELSE IfEndHandling Instr IfElseEndHandling
+| WHILE                             { fprintf(output,".upwhile%d:\n", num_while); }
+  '(' Exp                           { fprintf(output,"pop rax\ncmp rax,0\njz .downwhile%d\n", num_while); }
+  ')' Instr                         { fprintf(output,"jmp .upwhile%d\n.downwhile%d:\n", num_while, num_while); num_while++; }
 | '{' SuiteInstr '}'
 ;
-IfHandling:                       { gen_if_start($<num>$ = num_if++); };
-IfEndHandling:                    { gen_if_end($<num>-3); };
-IfElseEndHandling:                { gen_ifelse_end($<num>-5); };
+IfHandling:                         { gen_if_start($<num>$ = num_if++); };
+IfEndHandling:                      { gen_if_end($<num>-3); };
+IfElseEndHandling:                  { gen_ifelse_end($<num>-5); };
 Exp:
-  LValue '=' Exp                { 
-                                  if(loc_lookup($<ident>1) != TAB){
-                                  $$ = gen_assign($<ident>1, scope);
-                                  }else{
-                                    $$ = gen_assign_tab($<ident>1,scope);
-                                  }
-                                }
+  LValue '=' Exp                    { $$ = gen_assign($<ident>1, scope); }
 | EB
 ;
 EB:
-  EB OR TB    { gen_or($1, $3, num_label++); }
+  EB OR TB                          { gen_or($1, $3, num_label++); }
 | TB
 ;
 TB:
-  TB AND FB   { gen_and($1, $3, num_label++); }
+  TB AND FB                         { gen_and($1, $3, num_label++); }
 | FB
 ;
 FB:
-  FB EQ M     { gen_eq($2, $1, $3, num_label++); }
+  FB EQ M                           { gen_eq($2, $1, $3, num_label++); }
 | M
 ;
 M:
-  M ORDER E   { gen_order($2, $1, $3, num_label++); }
+  M ORDER E                         { gen_order($2, $1, $3, num_label++); }
 |  E
 ;
 E:
-  E ADDSUB T  { gen_addsub($2, $1, $3); }
+  E ADDSUB T                        { gen_addsub($2, $1, $3); }
 | T
 ;
 T:
-  T DIVSTAR F { gen_divstar($2, $1, $3); }
+  T DIVSTAR F                       { gen_divstar($2, $1, $3); }
 | F
  ;
 F:
-  ADDSUB F                      { $$ = gen_signed_expr($1, $2); }
-| '!' F                         { $$ = gen_negate_expr($2); }
-| '(' Exp ')'                   { $$ = $2; }
-| LValue                        { if(loc_lookup($<ident>1) != TAB){
-                                    $$ = gen_value($<ident>1, scope);
-                                  }else{
-                                    $$ = gen_value_tab($<ident>1,scope);
-                                  }
-                                }
-| NUM                           { $$ = gen_num($1, scope); }
-| CARACTERE                     { $$ = gen_char($1, scope); }
-| IDENT '(' Arguments  ')'      { $$ = gen_function_call($<ident>1,$<num>3); } 
+  ADDSUB F                          { $$ = gen_signed_expr($1, $2); }
+| '!' F                             { $$ = gen_negate_expr($2); }
+| '(' Exp ')'                       { $$ = $2; }
+| LValue                            { $$ = gen_value($<ident>1, scope); }
+| NUM                               { $$ = gen_num($1, scope); }
+| CARACTERE                         { $$ = gen_char($1, scope); }
+| IDENT '(' Arguments  ')'          { $$ = gen_function_call($<ident>1, $<num>3); } 
 ;
 LValue:
-  IDENT                        { gen_check($<ident>1, scope); strcpy($$, $1);}
-| IDENT '[' Exp ']'            { gen_check($<ident>1, scope); strcpy($$, $1);}
+  IDENT                             { gen_check($<ident>1, scope); strcpy($$, $1);}
+| IDENT '[' Exp ']'                 { gen_check($<ident>1, scope); strcpy($$, $1);}
 ;
 Arguments:
   ListExp
 | {$<num>$ = 0;}
 ;
 ListExp:
-  ListExp ',' Exp {$<num>$ = $<num>1 + 1;}
-| Exp {$<num>$ = 1;}
+  ListExp ',' Exp                   { $<num>$ = $<num>1 + 1; }
+| Exp                               { $<num>$ = 1; }
 ;
 %%
 
